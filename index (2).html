@@ -1,0 +1,2622 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#05060d">
+<meta name="description" content="เกมหนีห้องศิลปะ 21:00 — ไขปริศนาทฤษฎีสี วงจรสี คู่สีตรงข้าม วรรณะสี และการผสมสี RYB พร้อมโหมดแข่งขันผ่าน QR Code">
+<title>21:00 — THE COLOR ESCAPE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@500;600;700&family=Sarabun:wght@400;500;600&family=Mali:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ===== 21:00 — THE COLOR ESCAPE  ·  Dark Academia × Cartoon Horror  ·  Mobile First ===== */
+:root{
+  --bg:#05060d; --ink:#eceeff; --muted:#a3abd0; --line:rgba(255,255,255,.14);
+  --panel:rgba(10,12,28,.82); --gold:#ffd84a; --lime:#d8ff5a; --good:#4be08a; --bad:#ff5a6a; --info:#7db4ff;
+  --head:'Prompt','Sarabun','Noto Sans Thai',system-ui,sans-serif;
+  --body:'Sarabun','Noto Sans Thai',system-ui,sans-serif;
+  --w:min(92vw,42dvh,420px);          /* ขนาดวงจรสี */
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;
+  overflow:hidden;overscroll-behavior:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+button{font-family:inherit;color:inherit}
+input{font-family:inherit}
+#app{position:fixed;inset:0;overflow:hidden}
+[hidden]{display:none!important}
+
+/* ---------- ฉาก ---------- */
+#scene{position:absolute;top:0;left:50%;height:100%;min-width:100%;aspect-ratio:5/3;transform:translateX(-50%);transition:transform 1.4s ease;z-index:1;--lamp:.5}
+#scene svg{width:100%;height:100%;display:block}
+#scene #lampGlow{opacity:var(--lamp);transition:opacity 1s}
+#scene .star{animation:twinkle 3.2s ease-in-out infinite}
+#scene .sec{transform-origin:0 0;animation:sweep 60s steps(60) infinite}
+#scene .wall-wheel{opacity:0;transition:opacity 2s}
+#scene.wheel-on .wall-wheel{opacity:1;filter:drop-shadow(0 0 6px rgba(255,255,255,.5))}
+#scene .exit-sign{opacity:0;transition:opacity 1s}
+#scene.exit-on .exit-sign{opacity:1;animation:glow 1.6s ease-in-out infinite alternate}
+#scene #leak{opacity:.35}
+.bolt .led{fill:#4be08a;filter:drop-shadow(0 0 4px #4be08a)}
+.bolt.locked .led{fill:#ff3d4d;filter:drop-shadow(0 0 4px #ff3d4d)}
+.door-sil{transform:translateX(130px);opacity:0}
+.door-sil.go{animation:silPass 4.2s linear}
+.cd-sil{transform:translateX(160px);opacity:0}
+.cd-sil.go{animation:silPass2 4.6s linear}
+#creatures{position:fixed;inset:0;pointer-events:none;z-index:2}
+#dark{position:fixed;inset:0;background:#02030a;opacity:.12;pointer-events:none;z-index:3;transition:opacity .4s}
+#vignette{position:fixed;inset:0;pointer-events:none;z-index:4;background:radial-gradient(ellipse at center,transparent 38%,rgba(0,0,6,.78) 100%)}
+#redblue{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;transition:opacity 1s;mix-blend-mode:screen}
+#redblue.on{opacity:1}
+#redblue::before,#redblue::after{content:"";position:absolute;inset:0;animation:rbA 1.6s ease-in-out infinite}
+#redblue::before{background:radial-gradient(circle at 0% 100%,rgba(255,40,60,.55),transparent 62%)}
+#redblue::after{background:radial-gradient(circle at 100% 0%,rgba(50,110,255,.55),transparent 62%);animation-delay:.8s}
+#fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:9}
+
+.creature{position:absolute;left:var(--x,-30vw);top:var(--y,10dvh);width:clamp(96px,26vw,200px);opacity:0;
+  transform:translate(-50%,0) scale(var(--s,1)) rotate(var(--r,0deg));transform-origin:50% 100%;
+  transition:left 1.6s ease,top 1.6s ease,transform 1.6s ease,opacity .9s;filter:drop-shadow(0 6px 14px rgba(0,0,0,.7))}
+.creature.c{width:clamp(70px,16vw,130px)}
+.creature svg{display:block;width:100%;height:auto}
+.creature .cr-in{animation:breathe 3.4s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+.creature.b .cr-in{animation-duration:4.1s}
+.creature .eye circle:first-child{filter:drop-shadow(0 0 5px #d8ff5a)}
+.creature .pupil{transition:transform .15s}
+.creature .eye{animation:blink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+.creature.b .eye{animation-delay:1.7s}
+.creature .drip{animation:drip 3s ease-in-out infinite;transform-box:fill-box;transform-origin:top}
+.creature .drip.d2{animation-delay:1.2s}
+.creature.lunge svg{animation:lunge .7s ease-out}
+.creature.recoil svg{animation:recoil .7s ease-out}
+
+/* ---------- หน้าจอ ---------- */
+.screen{position:absolute;inset:0;display:none;z-index:5;padding:calc(58px + env(safe-area-inset-top)) 12px calc(12px + env(safe-area-inset-bottom));min-height:0}
+.screen.active{display:flex;animation:fadeIn .55s both}
+#scr-gate,#scr-intro,#scr-cut{background:#000;padding-top:calc(16px + env(safe-area-inset-top))}
+#scr-cut.over{background:transparent}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;width:100%}
+
+h1,h2,h3{font-family:var(--head);margin:0}
+.title{font-family:var(--head);font-weight:700;letter-spacing:.04em;line-height:1.05}
+.title .big{display:block;font-size:clamp(3rem,16vw,6.2rem);background:linear-gradient(180deg,#fff 10%,#ff7a7a 55%,#7a1d3a);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 0 40px rgba(255,80,120,.35);animation:flickText 6s infinite}
+.title .sub{display:block;font-size:clamp(1rem,4.6vw,1.6rem);letter-spacing:.34em;color:var(--lime);margin-top:6px}
+.typed{font-family:var(--head);font-size:clamp(1.15rem,5vw,1.7rem);min-height:1.6em;margin:.35em 0;color:#dfe3ff;text-shadow:0 0 18px rgba(150,170,255,.4);opacity:0;transition:opacity .6s}
+.typed.in{opacity:1}
+.typed.first{font-size:clamp(2.2rem,11vw,4rem);color:#fff;font-weight:700;letter-spacing:.08em}
+.hint-tap{color:var(--muted);font-size:.95rem;animation:blinkSlow 1.8s infinite}
+
+/* ---------- ปุ่ม ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5em;min-height:54px;padding:0 26px;border:0;border-radius:16px;cursor:pointer;
+  font:600 1.08rem/1 var(--head);color:#171200;background:linear-gradient(#ffe56f,#ffc12e);box-shadow:0 5px 0 #a87708,0 10px 24px rgba(0,0,0,.5);
+  transition:transform .12s,box-shadow .12s,filter .2s}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #a87708}
+.btn:disabled{opacity:.4;pointer-events:none;filter:grayscale(.5)}
+.btn.big{min-height:64px;font-size:1.3rem;padding:0 38px}
+.btn.ghost{background:rgba(255,255,255,.09);color:var(--ink);box-shadow:none;border:1px solid var(--line)}
+.btn.ghost:active{background:rgba(255,255,255,.18);transform:none}
+.btn.red{background:linear-gradient(#ff7a7a,#e0334d);color:#fff;box-shadow:0 5px 0 #8e1d30,0 10px 24px rgba(0,0,0,.5)}
+.btn.green{background:linear-gradient(#7af0b0,#26c26a);box-shadow:0 5px 0 #14773f,0 10px 24px rgba(0,0,0,.5)}
+.btn.sm{min-height:44px;padding:0 16px;font-size:.95rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.stack{display:flex;flex-direction:column;gap:12px;align-items:center;width:100%}
+.link{background:none;border:0;color:var(--info);text-decoration:underline;font-size:.95rem;cursor:pointer;padding:10px}
+
+/* ---------- HUD ---------- */
+#hud{position:fixed;top:0;left:0;right:0;z-index:6;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:calc(8px + env(safe-area-inset-top)) 12px 8px;background:linear-gradient(rgba(3,4,12,.92),rgba(3,4,12,0));pointer-events:none}
+#hud>*{pointer-events:auto}
+.hud-l{min-width:0;flex:1.2}.hud-r{display:flex;gap:6px;align-items:center;flex:1;justify-content:flex-end}.hud-c{flex:1.4;text-align:center}
+.hud-stage{font:700 .72rem var(--head);letter-spacing:.14em;color:var(--lime);text-transform:uppercase}
+.hud-name{font:600 .92rem var(--head);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.seg{display:flex;gap:4px;max-width:200px;margin:0 auto}
+.seg i{flex:1;height:8px;border-radius:5px;background:rgba(255,255,255,.14);position:relative;overflow:hidden}
+.seg i::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#ffd84a,#ff7a4a);transform-origin:left;transform:scaleX(var(--f,0));transition:transform .6s}
+#hudClock{font:700 .8rem var(--head);margin-top:3px;color:#ffb3b3;letter-spacing:.14em;text-shadow:0 0 8px rgba(255,80,80,.6)}
+.hud-score{font:700 1.05rem var(--head);color:var(--gold);min-width:2.4em;text-align:right;text-shadow:0 0 12px rgba(255,216,74,.5)}
+.hud-score small{font-size:.6em;color:var(--muted);margin-left:2px}
+.icon-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(10,12,28,.7);font-size:1.1rem;cursor:pointer;display:grid;place-items:center;padding:0}
+.icon-btn:active{background:rgba(255,255,255,.2)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.1);font:600 .8rem var(--head)}
+
+/* ---------- แผงปริศนา ---------- */
+#scr-play{align-items:flex-end;justify-content:center}
+.panel{width:min(100%,640px);max-height:100%;overflow-y:auto;overflow-x:hidden;background:var(--panel);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--line);border-radius:22px;padding:14px 14px 12px;box-shadow:0 14px 50px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.08);
+  scrollbar-width:thin;animation:rise .5s both}
+.panel.wide{width:min(100%,980px)}
+.task{font:600 1.08rem/1.35 var(--head);margin:0 0 4px;text-align:center}
+.task b{color:var(--gold)}
+.sub{color:var(--muted);font-size:.92rem;text-align:center;margin:0 0 8px}
+.cols{display:flex;flex-direction:column;gap:10px;align-items:center}
+@media (min-width:860px) and (min-aspect-ratio:5/4){
+  .cols.two{flex-direction:row;align-items:center;justify-content:center;gap:26px}
+  .cols.two>.work{flex:1;min-width:0}
+  :root{--w:min(92vw,56dvh,440px)}
+}
+.work{width:100%;display:flex;flex-direction:column;align-items:center;gap:10px}
+.actions{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:8px;flex-wrap:wrap}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,.1);font-size:.82rem;color:var(--muted)}
+
+/* ---------- วงจรสี ---------- */
+.wheel{position:relative;width:var(--w);aspect-ratio:1;margin:2px auto;flex:none;touch-action:manipulation}
+.wheel.sm{--w:min(70vw,32dvh,300px)}
+.wheel .zones,.wheel .lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.slot{position:absolute;width:16.8%;aspect-ratio:1;left:var(--sx);top:var(--sy);transform:translate(-50%,-50%);padding:0;border:0;background:none;border-radius:50%;cursor:pointer;z-index:2}
+.slot::before{content:"";position:absolute;inset:-9%;border-radius:50%}      /* ขยายพื้นที่สัมผัส */
+.slot .dot{position:absolute;inset:0;border-radius:50%;background:var(--c);border:2.5px solid rgba(255,255,255,.75);box-shadow:0 0 14px color-mix(in srgb,var(--c) 70%,transparent),inset 0 -5px 8px rgba(0,0,0,.25),inset 0 4px 6px rgba(255,255,255,.35);transition:transform .25s,box-shadow .3s,opacity .3s,background .4s}
+.slot.empty .dot{background:rgba(255,255,255,.04);border:2px dashed rgba(255,255,255,.3);box-shadow:none}
+.slot .tier{position:absolute;inset:0;display:none;place-items:center;font:700 .95em var(--head);color:rgba(255,255,255,.35);pointer-events:none}
+.slot.empty .tier{display:grid}
+.slot .lbl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:150%;text-align:center;font:700 .62rem/1.1 var(--head);color:var(--tc,#fff);text-shadow:var(--ts,0 1px 3px #000,0 0 6px #000);pointer-events:none;display:none}
+.wheel.names .slot:not(.empty) .lbl{display:block}
+.slot:active .dot{transform:scale(.9)}
+.slot.pulse .dot{animation:pulseDot 1s ease-in-out infinite}
+.slot.ok .dot{animation:pop .55s;box-shadow:0 0 28px 8px var(--c)}
+.slot.bad{animation:shake .42s}
+.slot.dim{opacity:.32}
+.slot.sel .dot{transform:scale(1.14);border-color:#fff;box-shadow:0 0 24px 6px var(--c)}
+.slot.target .dot{box-shadow:0 0 0 4px #fff,0 0 26px 8px var(--c)}
+.slot.flag::after{content:"~";position:absolute;right:-2px;top:-6px;font:700 1rem var(--head);color:var(--gold)}
+.slot.warm .dot{outline:3px solid rgba(255,140,60,.9);outline-offset:3px}
+.slot.cool .dot{outline:3px solid rgba(90,160,255,.9);outline-offset:3px}
+.slot:disabled{cursor:default}
+.wheel .center{position:absolute;left:50%;top:50%;width:54%;aspect-ratio:1;transform:translate(-50%,-50%);display:grid;place-items:center;text-align:center;z-index:1}
+.center-card{font:600 .95rem/1.25 var(--head);color:var(--ink)}
+.center-card small{display:block;font:500 .72rem var(--body);color:var(--muted)}
+.center-swatch{width:62%;aspect-ratio:1;border-radius:50%;margin:0 auto 4px;border:3px solid #fff;box-shadow:0 0 22px var(--c);background:var(--c);transition:background .4s,box-shadow .4s}
+.lines line{stroke-width:1.6;stroke-linecap:round;stroke-dasharray:80;stroke-dashoffset:80;animation:draw .8s forwards;filter:drop-shadow(0 0 2px currentColor)}
+.zones path{opacity:0;transition:opacity 1s}
+.zones.on path{opacity:1}
+.fly{position:fixed;z-index:20;border-radius:50%;pointer-events:none;border:2.5px solid #fff;transition:left .8s cubic-bezier(.3,.8,.3,1),top .8s cubic-bezier(.3,.8,.3,1),width .8s,height .8s,box-shadow .8s}
+
+/* ---------- จานสี (ด่าน 1) ---------- */
+.palette{position:relative;width:min(100%,430px);aspect-ratio:1.5;margin:0 auto}
+.palette svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 10px 14px rgba(0,0,0,.6))}
+.pcirc{position:absolute;width:17%;aspect-ratio:1;left:var(--px);top:var(--py);transform:translate(-50%,-50%);border:0;padding:0;border-radius:50%;background:none;cursor:pointer;z-index:2}
+.pcirc::before{content:"";position:absolute;inset:-12%;border-radius:50%}
+.pcirc .dot{position:absolute;inset:0;border-radius:50%;background:var(--c);border:2.5px solid rgba(255,255,255,.55);box-shadow:inset 0 -6px 9px rgba(0,0,0,.28),inset 0 5px 7px rgba(255,255,255,.4),0 3px 7px rgba(0,0,0,.5);transition:transform .2s,box-shadow .3s}
+.pcirc .nm{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:140%;text-align:center;font:700 .66rem/1.1 var(--head);color:var(--tc,#fff);text-shadow:var(--ts,0 1px 3px #000);pointer-events:none}
+.pcirc:active .dot{transform:scale(.88)}
+.pcirc.ok .dot{box-shadow:0 0 26px 8px var(--c);animation:pop .55s}
+.pcirc.bad{animation:shake .42s}
+.pcirc.pulse .dot{animation:pulseDot 1s infinite}
+.pcirc.gone{visibility:hidden}
+.pcirc.glow .dot{border-color:#fff}
+
+/* ---------- ผสมสี (ด่าน 1) ---------- */
+.bowl{position:relative;width:78%;aspect-ratio:1;border-radius:50%;margin:0 auto;background:radial-gradient(circle at 35% 30%,#fff 0,#e8e6f2 40%,#b9b6cf 100%);box-shadow:0 8px 20px rgba(0,0,0,.6),inset 0 -6px 12px rgba(0,0,0,.2);display:grid;place-items:center}
+.bowl .liquid{width:80%;aspect-ratio:1;border-radius:50%;background:var(--l,#2a2a3a);box-shadow:inset 0 5px 10px rgba(0,0,0,.35),inset 0 -4px 8px rgba(255,255,255,.2);transition:background .5s}
+.bowl .liquid.mixing{animation:swirl 1.1s ease-in-out;background:conic-gradient(var(--a),var(--b),var(--a),var(--b),var(--a))}
+.bowl .liquid.empty{background:#2c2a3b;box-shadow:inset 0 5px 10px rgba(0,0,0,.6)}
+.srcs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.src{width:62px;height:62px;border-radius:50%;border:0;padding:0;background:none;position:relative;cursor:pointer}
+.src::before{content:"";position:absolute;inset:-6px;border-radius:50%}
+.src .dot{position:absolute;inset:0;border-radius:50%;background:var(--c);border:3px solid rgba(255,255,255,.6);box-shadow:inset 0 -6px 9px rgba(0,0,0,.28),inset 0 5px 7px rgba(255,255,255,.4),0 3px 8px rgba(0,0,0,.5);transition:transform .2s}
+.src .nm{position:absolute;left:50%;top:105%;transform:translateX(-50%);font:600 .68rem var(--head);white-space:nowrap;color:var(--muted)}
+.src.sel .dot{transform:scale(1.15);border-color:#fff;box-shadow:0 0 22px 5px var(--c)}
+.src:disabled{opacity:.35}
+.srcs.pad{padding-bottom:16px}
+.opts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;animation:rise .4s both}
+.opt{min-width:74px;border-radius:16px;border:2px solid var(--line);background:rgba(255,255,255,.06);padding:8px 8px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 .8rem/1.15 var(--head);transition:transform .15s,border-color .2s}
+.opt:active{transform:scale(.94)}
+.opt .dot{width:46px;height:46px;border-radius:50%;background:var(--c);border:2.5px solid rgba(255,255,255,.6);box-shadow:inset 0 -5px 8px rgba(0,0,0,.28),inset 0 4px 6px rgba(255,255,255,.35)}
+.opt.ok{border-color:var(--good);background:rgba(75,224,138,.18);animation:pop .5s}
+.opt.bad{border-color:var(--bad);animation:shake .42s}
+.opt.pulse{border-color:var(--gold);animation:pulseDot 1s infinite}
+.opt:disabled{opacity:.4}
+.dots3{display:flex;gap:8px;justify-content:center}
+.dots3 i{width:16px;height:16px;border-radius:50%;border:2px dashed rgba(255,255,255,.4);transition:.3s}
+.dots3 i.on{border-style:solid;border-color:#fff;background:var(--c);box-shadow:0 0 12px var(--c)}
+
+/* ---------- Feedback / บทเรียน ---------- */
+.fb{min-height:78px;margin-top:8px}
+.fb .card{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:14px;background:rgba(255,255,255,.07);border-left:5px solid var(--info);animation:rise .35s both;text-align:left}
+.fb .card.good{border-color:var(--good);background:rgba(75,224,138,.12)}
+.fb .card.bad{border-color:var(--bad);background:rgba(255,90,106,.12)}
+.fb .card.hint{border-color:var(--gold);background:rgba(255,216,74,.1)}
+.fb .ico{font-size:1.5rem;line-height:1.1}
+.fb .tt{font:700 1rem var(--head);margin-bottom:1px}
+.fb .tx{font-size:.95rem;color:#dfe3ff;line-height:1.4}
+.fb .tx b{color:var(--gold)}
+.lesson{display:grid;gap:8px;margin:6px 0 2px}
+.lesson .l{display:flex;gap:10px;align-items:center;background:rgba(255,255,255,.07);border-radius:14px;padding:8px 10px;text-align:left;font-size:.92rem}
+.lesson .l .sw{display:flex;flex:none;gap:3px}
+.lesson .l .sw i{width:20px;height:20px;border-radius:50%;border:2px solid rgba(255,255,255,.6)}
+.lesson h4{margin:0;font:700 .95rem var(--head);color:var(--gold)}
+.lesson p{margin:0;color:#d5d9f5}
+.bigtitle{font:700 1.3rem var(--head);text-align:center;margin:2px 0 4px}
+
+/* ---------- ด่านที่ 3 ---------- */
+.tray{display:flex;gap:10px;width:100%}
+.tray>div{flex:1;border-radius:14px;padding:6px 8px;min-height:50px;border:1px dashed var(--line);background:rgba(255,255,255,.04)}
+.tray .th{font:700 .74rem var(--head);margin-bottom:4px;letter-spacing:.05em}
+.tray .warm .th{color:#ff9a5a}.tray .cool .th{color:#7db4ff}
+.tray .warm{border-color:rgba(255,140,60,.5)}.tray .cool{border-color:rgba(90,160,255,.5)}
+.tray .chips{display:flex;gap:4px;flex-wrap:wrap;min-height:22px}
+.tray .chips i{width:22px;height:22px;border-radius:50%;border:2px solid #fff;background:var(--c);animation:pop .4s}
+.need{display:flex;gap:6px;justify-content:center}
+.need i{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.5)}
+.need i.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 10px var(--gold)}
+
+/* ---------- ด่านที่ 4: ผสมสี ---------- */
+.timer{width:100%;height:10px;border-radius:6px;background:rgba(255,255,255,.12);overflow:hidden;position:relative}
+.timer i{position:absolute;inset:0;transform-origin:left;transform:scaleX(var(--t,1));background:linear-gradient(90deg,#ff5a6a,#ffd84a 40%,#4be08a)}
+.timer-t{font:700 .85rem var(--head);color:var(--muted);display:flex;justify-content:space-between;width:100%;margin-bottom:2px}
+.cmp{display:flex;width:100%;height:clamp(92px,17dvh,150px);border-radius:20px;overflow:hidden;border:3px solid rgba(255,255,255,.8);box-shadow:0 6px 24px rgba(0,0,0,.6);position:relative;background:#222}
+.cmp>div{flex:1;position:relative;transition:background .08s linear}
+.cmp .t{background:var(--tc)}.cmp .m{background:var(--mc)}
+.cmp span{position:absolute;left:10px;bottom:6px;font:700 .72rem var(--head);padding:2px 8px;border-radius:99px;background:rgba(0,0,0,.55);color:#fff}
+.cmp .m span{left:auto;right:10px}
+.chan{width:100%}
+.chan .rr{display:flex;align-items:center;gap:6px}
+.chan .nm{display:flex;align-items:center;gap:6px;width:76px;flex:none;font:700 .86rem var(--head)}
+.chan .nm i{width:16px;height:16px;border-radius:50%;background:var(--c);border:2px solid #fff;flex:none}
+.chan .v{font:700 .95rem var(--head);color:var(--gold);width:3.1em;text-align:right;flex:none}
+.step{width:44px;height:44px;flex:none;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.09);font:700 1.3rem var(--head);cursor:pointer;display:grid;place-items:center;padding:0}
+.step:active{background:rgba(255,255,255,.25)}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:38px;background:transparent;margin:0;touch-action:pan-y}
+input[type=range]::-webkit-slider-runnable-track{height:14px;border-radius:8px;background:linear-gradient(90deg,#fff,var(--c));border:1px solid rgba(255,255,255,.4)}
+input[type=range]::-moz-range-track{height:14px;border-radius:8px;background:linear-gradient(90deg,#fff,var(--c));border:1px solid rgba(255,255,255,.4)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:36px;height:36px;border-radius:50%;margin-top:-13px;background:#fff;border:5px solid var(--c);box-shadow:0 2px 8px rgba(0,0,0,.6)}
+input[type=range]::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:#fff;border:5px solid var(--c);box-shadow:0 2px 8px rgba(0,0,0,.6)}
+.result{display:grid;gap:8px;text-align:center}
+.result .pts{font:700 2.6rem var(--head);color:var(--gold);line-height:1;text-shadow:0 0 18px rgba(255,216,74,.5)}
+.result .pts small{font-size:.4em;color:var(--muted)}
+.bars{display:grid;gap:6px;text-align:left}
+.bars .b{display:grid;grid-template-columns:96px 1fr 54px;gap:8px;align-items:center;font:600 .85rem var(--head)}
+.bars .track{height:12px;border-radius:7px;background:rgba(255,255,255,.12);overflow:hidden}
+.bars .track i{display:block;height:100%;border-radius:7px;background:linear-gradient(90deg,#ff7a4a,#ffd84a);transform-origin:left;animation:grow 1s both}
+.bars .b span:last-child{text-align:right;color:var(--gold)}
+.recipe{display:flex;gap:8px;justify-content:center;font-size:.85rem;flex-wrap:wrap}
+.recipe .r{background:rgba(255,255,255,.07);border-radius:12px;padding:6px 10px;display:flex;align-items:center;gap:8px}
+.recipe .sw{width:30px;height:30px;border-radius:50%;border:2px solid #fff}
+.recipe b{color:var(--gold)}
+.mini-r{font-size:.78rem;color:var(--muted)}
+.countdown{font:700 clamp(5rem,30vw,12rem) var(--head);color:#fff;text-shadow:0 0 40px var(--lime);animation:cdPop 1s both}
+
+/* ---------- คัตซีน ---------- */
+.cut-wrap{position:relative;width:100%;height:100%;display:flex;flex-direction:column;align-items:center}
+.cut-view{flex:1;min-height:0;width:100%;display:grid;place-items:center;position:relative;overflow:hidden}
+.cut-view>svg{max-height:100%;max-width:min(100%,520px);width:100%;height:100%}
+.cut-view.full>svg{max-width:none}
+.cut-cap{width:min(100%,640px);min-height:112px;padding:12px 16px calc(14px + env(safe-area-inset-bottom));text-align:center;font:500 clamp(1.05rem,4.3vw,1.35rem)/1.5 var(--head);text-shadow:0 2px 8px #000;color:#eef0ff;display:flex;flex-direction:column;justify-content:center;gap:6px}
+.cut-cap .who{font:700 .8rem var(--head);letter-spacing:.2em;color:var(--lime)}
+.cut-skip{position:absolute;right:10px;top:calc(10px + env(safe-area-inset-top));z-index:3;font-size:.8rem;color:var(--muted);background:rgba(0,0,0,.5);border:1px solid var(--line);border-radius:99px;padding:6px 12px;cursor:pointer}
+.chalk{width:min(88%,500px);aspect-ratio:1.6;border:10px solid #5d3b24;border-radius:8px;background:linear-gradient(135deg,#22362f,#16231f);box-shadow:0 0 40px rgba(0,0,0,.8),inset 0 0 40px rgba(0,0,0,.45);display:grid;place-items:center;padding:16px;
+  font:500 clamp(1.2rem,5.4vw,1.9rem)/1.55 'Mali','Prompt',cursive;color:#f3f1e4;text-shadow:0 0 6px rgba(255,255,255,.4);white-space:pre-line}
+.pa{display:grid;place-items:center;gap:10px}
+.pa .spk{width:130px;height:130px;border-radius:24px;background:repeating-linear-gradient(0deg,#2c2c3a 0 6px,#1a1a26 6px 12px);border:4px solid #444a5e;box-shadow:0 0 30px rgba(120,160,255,.3);position:relative;display:grid;place-items:center;font-size:3rem}
+.pa .spk.talk::after{content:"";position:absolute;inset:-14px;border-radius:34px;border:3px solid rgba(130,170,255,.55);animation:ring 1s infinite}
+.pa .spk.talk::before{content:"";position:absolute;inset:-28px;border-radius:44px;border:2px solid rgba(130,170,255,.3);animation:ring 1s .3s infinite}
+.stage-card{text-align:center}
+.stage-card .n{font:700 .9rem var(--head);letter-spacing:.4em;color:var(--lime)}
+.stage-card .t{font:700 clamp(1.8rem,8.5vw,3rem)/1.1 var(--head);margin:6px 0;background:linear-gradient(#fff,#ffb4d0);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stage-card .s{font:500 1.1rem var(--head);color:var(--gold);margin-bottom:6px}
+.stage-card .d{color:var(--muted);max-width:30em;margin:0 auto}
+
+/* ---------- Brief (เปิดห้อง) ---------- */
+#scr-brief{align-items:flex-end;justify-content:center;padding-top:0}
+.brief-box{width:min(100%,640px);background:linear-gradient(rgba(5,6,16,.2),rgba(5,6,16,.92) 30%);border-radius:22px;padding:22px 16px 16px;text-align:center}
+.brief-box .line{font:500 clamp(1rem,4.2vw,1.25rem)/1.5 var(--head);min-height:3.2em;color:#eef0ff}
+.hot{position:absolute;transform:translate(-50%,-50%);padding:3px 10px;border-radius:99px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.35);font:600 .75rem var(--head);color:#fff;opacity:0;transition:opacity .6s;white-space:nowrap;z-index:2;pointer-events:none}
+.hot.on{opacity:1}
+
+/* ---------- Lobby / Join / Leaderboard ---------- */
+.card{background:var(--panel);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 14px 50px rgba(0,0,0,.7);width:min(100%,560px)}
+.scroll{overflow-y:auto;max-height:100%;width:100%;display:flex;justify-content:center;align-items:flex-start;padding-bottom:20px}
+.scroll>.card{margin:auto 0}
+.field{width:100%;height:56px;border-radius:14px;border:2px solid var(--line);background:rgba(255,255,255,.07);color:#fff;font:600 1.15rem var(--head);padding:0 16px;outline:none;-webkit-user-select:text;user-select:text;text-align:center}
+.field:focus{border-color:var(--gold)}
+.field.code{letter-spacing:.5em;text-transform:uppercase;font-size:1.5rem;text-indent:.5em}
+.roomcode{font:700 clamp(2.8rem,15vw,4.6rem)/1 var(--head);letter-spacing:.2em;text-indent:.2em;color:var(--lime);text-shadow:0 0 24px rgba(216,255,90,.5)}
+.qr{background:#fff;border-radius:16px;padding:6px;width:min(64vw,240px);aspect-ratio:1;margin:0 auto;box-shadow:0 0 0 6px rgba(255,255,255,.12),0 10px 30px rgba(0,0,0,.6)}
+.qr svg{width:100%;height:100%;display:block;border-radius:10px}
+.urlbox{font-size:.78rem;color:var(--muted);word-break:break-all;background:rgba(255,255,255,.06);border-radius:10px;padding:6px 10px;-webkit-user-select:text;user-select:text;text-align:center}
+.warn{display:flex;gap:10px;align-items:flex-start;background:rgba(255,170,60,.12);border:1px solid rgba(255,170,60,.5);color:#ffd9a3;border-radius:14px;padding:10px 12px;font-size:.88rem;line-height:1.4;text-align:left}
+.warn.info{background:rgba(125,180,255,.1);border-color:rgba(125,180,255,.45);color:#cfe3ff}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:6px;width:100%}
+.plist li{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.07);border-radius:12px;padding:8px 12px;font:600 1rem var(--head);animation:rise .35s both;text-align:left}
+.plist .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;background:var(--c);color:#111;flex:none}
+.plist .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist .you{font-size:.72rem;color:var(--lime)}
+.plist .off{opacity:.45}
+.dot-on,.dot-off{width:9px;height:9px;border-radius:50%;flex:none}
+.dot-on{background:var(--good);box-shadow:0 0 8px var(--good)}.dot-off{background:#777}
+.lb{display:grid;gap:8px;position:relative;width:100%}
+.lb-row{display:grid;grid-template-columns:44px 1fr auto;gap:10px;align-items:center;background:rgba(255,255,255,.08);border-radius:16px;padding:8px 12px;transition:transform .7s cubic-bezier(.3,.8,.3,1),background .4s;position:relative;overflow:hidden;text-align:left}
+.lb-row .pl{font:700 1.5rem var(--head);text-align:center}
+.lb-row .nm{font:700 1.05rem var(--head);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lb-row .sub2{font-size:.76rem;color:var(--muted);display:flex;gap:6px;align-items:center}
+.lb-row .sc{font:700 1.4rem var(--head);color:var(--gold)}
+.lb-row .sc small{font-size:.55em;color:var(--muted)}
+.lb-row .bar{position:absolute;left:0;bottom:0;height:3px;background:linear-gradient(90deg,#ff7a4a,#ffd84a);transform-origin:left;transform:scaleX(var(--b,0));width:100%;transition:transform .8s}
+.lb-row.me{outline:2px solid var(--lime)}
+.lb-row.p1{background:linear-gradient(90deg,rgba(255,216,74,.28),rgba(255,255,255,.08))}
+.lb-row.p2{background:linear-gradient(90deg,rgba(210,220,240,.2),rgba(255,255,255,.08))}
+.lb-row.p3{background:linear-gradient(90deg,rgba(214,140,80,.22),rgba(255,255,255,.08))}
+.dots5{display:flex;gap:3px}.dots5 i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2)}.dots5 i.on{background:var(--good)}
+.winner{text-align:center;position:relative}
+.winner .crown{font-size:3.4rem;animation:bounce 1s infinite}
+.winner .wn{font:700 clamp(1.8rem,9vw,3rem)/1.1 var(--head);background:linear-gradient(#fff3a0,#ffb300);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 14px rgba(255,200,0,.6))}
+.spot{position:absolute;inset:-30px -10px;background:radial-gradient(ellipse at 50% 0,rgba(255,240,180,.35),transparent 65%);pointer-events:none;animation:glow 1.5s infinite alternate}
+.rankchip{font:700 .85rem var(--head);padding:3px 10px;border-radius:99px;background:rgba(255,216,74,.18);color:var(--gold)}
+.conn{font-size:.72rem;display:flex;align-items:center;gap:6px;color:var(--muted)}
+
+/* ---------- Modal / Toast ---------- */
+#modal{position:fixed;inset:0;z-index:12;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,6,.74);backdrop-filter:blur(4px)}
+#modal.open{display:flex;animation:fadeIn .25s both}
+#modal .box{width:min(100%,420px);max-height:100%;overflow:auto;background:#10132a;border:1px solid var(--line);border-radius:22px;padding:20px;text-align:center;box-shadow:0 20px 60px #000}
+#modal h3{font-size:1.3rem;margin-bottom:6px}
+#modal p{color:var(--muted);margin:6px 0 14px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom));transform:translate(-50%,30px);z-index:13;background:#161a36;border:1px solid var(--line);border-radius:99px;padding:10px 18px;font:600 .92rem var(--head);opacity:0;pointer-events:none;transition:.35s;max-width:90vw;text-align:center}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.end-score{font:700 clamp(3rem,16vw,5rem)/1 var(--head);color:var(--gold);text-shadow:0 0 30px rgba(255,216,74,.5)}
+.end-score small{font-size:.35em;color:var(--muted)}
+.final-line{font:600 clamp(1.15rem,5vw,1.6rem)/1.5 var(--head);color:#ffd3d3;text-shadow:0 0 18px rgba(255,60,80,.5);max-width:24em;margin:0 auto}
+.ver{position:fixed;left:8px;bottom:6px;font-size:.66rem;color:rgba(255,255,255,.28);z-index:6;pointer-events:none}
+
+/* ---------- Animations ---------- */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+@keyframes sweep{to{transform:rotate(360deg)}}
+@keyframes glow{from{filter:drop-shadow(0 0 3px #5dffa0)}to{filter:drop-shadow(0 0 12px #5dffa0)}}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.04,.96)}}
+@keyframes blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+@keyframes drip{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.5)}}
+@keyframes lunge{0%{transform:scale(1)}35%{transform:scale(1.45) translateY(10px)}100%{transform:scale(1)}}
+@keyframes recoil{0%{transform:scale(1)}30%{transform:scale(.7) translateY(-8px)}100%{transform:scale(1)}}
+@keyframes silPass{0%{transform:translateX(130px);opacity:1}100%{transform:translateX(-170px);opacity:1}}
+@keyframes silPass2{0%{transform:translateX(170px);opacity:1}100%{transform:translateX(-200px);opacity:1}}
+@keyframes pulseDot{0%,100%{transform:scale(1);box-shadow:0 0 10px var(--c,#fff)}50%{transform:scale(1.14);box-shadow:0 0 26px 6px var(--c,#fff)}}
+@keyframes pop{0%{transform:scale(.6)}60%{transform:scale(1.25)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:translate(-50%,-50%)}20%{transform:translate(calc(-50% - 7px),-50%)}40%{transform:translate(calc(-50% + 7px),-50%)}60%{transform:translate(calc(-50% - 5px),-50%)}80%{transform:translate(calc(-50% + 5px),-50%)}}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes swirl{0%{transform:rotate(0)}100%{transform:rotate(540deg)}}
+@keyframes rbA{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes flickText{0%,19%,21%,60%,62%,100%{opacity:1}20%,61%{opacity:.4}63%{opacity:.8}}
+@keyframes blinkSlow{0%,100%{opacity:.35}50%{opacity:1}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes cdPop{0%{transform:scale(2.2);opacity:0}30%{transform:scale(1);opacity:1}100%{transform:scale(.8);opacity:0}}
+@keyframes ring{0%{transform:scale(.9);opacity:1}100%{transform:scale(1.2);opacity:0}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.shake-all{animation:shakeAll .4s}
+@keyframes shakeAll{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+@media (max-height:640px){:root{--w:min(88vw,36dvh,380px)}.task{font-size:1rem}.btn{min-height:48px}}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+
+.lines line.guide{stroke-dasharray:3 3;stroke-dashoffset:0;animation:none;opacity:.8}
+.mixwheel{position:relative;width:min(60vw,24dvh,230px);aspect-ratio:1;border-radius:50%;background:var(--ring);padding:10%;box-shadow:0 8px 30px rgba(0,0,0,.6),0 0 0 3px rgba(255,255,255,.35);margin:0 auto}
+.mixwheel .in{width:100%;height:100%;border-radius:50%;overflow:hidden;display:flex;border:4px solid #fff;background:#fff;box-shadow:inset 0 0 20px rgba(0,0,0,.3)}
+.mixwheel .in>div{flex:1;transition:background .08s linear}
+.mixwheel .in .t{background:var(--tc)}.mixwheel .in .m{background:var(--mc)}
+.mix-labels{display:flex;justify-content:space-around;width:min(60vw,24dvh,230px);margin:4px auto 0;font:700 .74rem var(--head);color:var(--muted)}
+.btn.block{width:100%}
+.cut-view.pad{padding:8px}
+.cdoor-open #cdDoorLeaf{transition:transform 3s ease-in-out;transform:perspective(900px) rotateY(-78deg)}
+#cdDoorLeaf{transition:transform 3s ease-in-out}
+#cdOpening{transition:opacity 3s}
+.cd-lock.glow{filter:drop-shadow(0 0 12px #fff);animation:glow 1s infinite alternate}
+.shadow2{animation:creep 6s ease-in forwards;opacity:0}
+@keyframes creep{0%{opacity:0;transform:translateX(-60px)}40%{opacity:1}100%{opacity:1;transform:translateX(0)}}
+.cut-wrap.final .cut-cap{color:#ffd3d3}
+
+#cutSchool .star{animation:twinkle 3.2s ease-in-out infinite}
+#cutSchool .sc-walk{transform:translate(120px,392px);animation:scWalk 7s ease-in-out forwards}
+@keyframes scWalk{0%{transform:translate(206px,392px) scale(.8)}100%{transform:translate(90px,402px) scale(1)}}
+#cutSchool .sc-cat{opacity:0;transition:opacity 1.6s}
+#cutSchool .sc-cat.show{opacity:1}
+#cutSchool .sc-tail{transform-box:fill-box;transform-origin:0 100%;animation:tailSway 2.4s ease-in-out infinite}
+@keyframes tailSway{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(12deg)}}
+#cutSchool .sc-eyes{animation:blink 4.5s infinite;transform-box:fill-box;transform-origin:center}
+#cutSchool .sc-eyes ellipse{filter:drop-shadow(0 0 3px #b6ff3b)}
+#cutSchool #scArtWin{animation:winFlick 3s infinite}
+@keyframes winFlick{0%,100%{opacity:1}47%{opacity:1}50%{opacity:.5}53%{opacity:1}}
+.cut-cap .big{display:block;font:700 clamp(1.5rem,7vw,2.4rem)/1.3 var(--head);text-shadow:0 0 22px rgba(255,255,255,.35)}
+.cut-cap .big.red{color:#ffd3d3;text-shadow:0 0 24px rgba(255,60,80,.55)}
+.final-line.big{font-size:clamp(2rem,10vw,3.2rem);letter-spacing:.06em}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="scene"></div>
+  <div id="creatures"></div>
+  <div id="redblue"></div>
+  <div id="dark"></div>
+  <div id="vignette"></div>
+
+  <header id="hud" hidden>
+    <div class="hud-l"><div class="hud-stage" id="hudStage">ด่าน 1</div><div class="hud-name" id="hudName"></div></div>
+    <div class="hud-c"><div class="seg" id="hudSeg"><i></i><i></i><i></i><i></i></div><div id="hudClock">21:00</div></div>
+    <div class="hud-r"><span class="rankchip" id="hudRank" hidden></span><div class="hud-score" id="hudScore">0<small>แต้ม</small></div>
+      <button class="icon-btn" id="btnSound" aria-label="เปิด/ปิดเสียง">🔊</button><button class="icon-btn" id="btnMenu" aria-label="เมนู">☰</button></div>
+  </header>
+
+  <!-- เกต: แตะเพื่อปลดล็อกเสียง -->
+  <section class="screen active" id="scr-gate">
+    <div class="center" id="gateBox">
+      <div class="title"><span class="big">21:00</span><span class="sub">THE COLOR ESCAPE</span></div>
+      <p class="hint-tap" style="margin-top:28px">แตะหน้าจอเพื่อเริ่ม · แนะนำให้เปิดเสียง 🔊</p>
+    </div>
+  </section>
+
+  <!-- Intro -->
+  <section class="screen" id="scr-intro">
+    <div class="center" id="introBox">
+      <div id="introLines" style="min-height:11em"></div>
+      <div id="introBtns" class="stack" style="margin-top:18px;opacity:0;pointer-events:none;transition:opacity 1s">
+        <button class="btn big" id="btnStart">START</button>
+        <button class="btn ghost" id="btnContinue" hidden>เล่นต่อ</button>
+        <button class="btn ghost" id="btnRejoin" hidden>↩ กลับเข้าห้องเดิม</button>
+        <div class="row" style="margin-top:4px">
+          <button class="btn ghost sm" id="btnCreate">👥 สร้างห้องแข่งขัน</button>
+          <button class="btn ghost sm" id="btnJoin">🔑 เข้าร่วมห้อง</button>
+        </div>
+        <button class="link" id="btnResetSave" hidden>ล้างความคืบหน้า</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- แผงเล่นด่าน -->
+  <section class="screen" id="scr-play"><div class="panel" id="panel"></div></section>
+
+  <!-- Cutscene -->
+  <section class="screen" id="scr-cut"><div class="cut-wrap">
+    <button class="cut-skip" id="cutSkip">แตะเพื่อข้ามฉาก ▶▶</button>
+    <div class="cut-view" id="cutView"></div>
+    <div class="cut-cap" id="cutCap"></div>
+  </div></section>
+
+  <!-- Join -->
+  <section class="screen" id="scr-join"><div class="scroll"><div class="card"><div class="stack" id="joinBox"></div></div></div></section>
+  <!-- Lobby -->
+  <section class="screen" id="scr-lobby"><div class="scroll"><div class="card"><div class="stack" id="lobbyBox"></div></div></div></section>
+  <!-- ผลการแข่งขัน -->
+  <section class="screen" id="scr-board"><div class="scroll"><div class="card"><div class="stack" id="boardBox"></div></div></div></section>
+  <!-- จบเกม -->
+  <section class="screen" id="scr-end"><div class="scroll"><div class="card"><div class="stack" id="endBox"></div></div></div></section>
+
+  <div id="modal"><div class="box" id="modalBox"></div></div>
+  <div id="toast"></div>
+  <canvas id="fx"></canvas>
+  <div class="ver" id="verTag"></div>
+</div>
+<script>
+'use strict';
+/* ╔══════════════════════════════════════════════════════════════════════════╗
+   ║  ตั้งค่า FIREBASE (Multiplayer ข้ามอุปกรณ์)  — แก้เฉพาะตรงนี้ที่เดียว       ║
+   ╠══════════════════════════════════════════════════════════════════════════╣
+   ║  1) ทำตามคู่มือ FIREBASE_SETUP.md เพื่อสร้าง Realtime Database           ║
+   ║  2) คัดลอกค่าจาก Firebase Console มาวางระหว่างเครื่องหมายคำพูด "" ด้านล่าง ║
+   ║  3) บันทึกไฟล์ แล้วเผยแพร่ index.html ขึ้นเว็บ                            ║
+   ║                                                                          ║
+   ║  ช่องที่เกมใช้จริงมีช่องเดียวคือ  databaseURL  (ต้องกรอก)                  ║
+   ║  ช่องอื่นเว้นไว้ให้วางทั้งก้อนที่ Firebase ให้มาได้เลย เกมไม่ได้ใช้ ปล่อยว่างได้ ║
+   ║  ถ้าเว้น databaseURL ว่างไว้ เกมจะทำงานใน "โหมดจำลอง" (ข้ามเครื่องไม่ได้)    ║
+   ╚══════════════════════════════════════════════════════════════════════════╝ */
+const firebaseConfig = {
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",        // ← ต้องกรอก เช่น "https://ชื่อโปรเจกต์-default-rtdb.asia-southeast1.firebasedatabase.app"
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
+};
+/* ───────────────────────── จบส่วนตั้งค่า — ด้านล่างนี้ไม่ต้องแก้ ───────────────────────── */
+
+;
+'use strict';
+/* =====================================================================
+   TCE CORE — ส่วนที่ไม่พึ่ง DOM (ทดสอบด้วย Node ได้)
+   1) Color : วงจรสี 12 สี, ระบบผสมสี RYB, ΔE (Lab), ระบบคะแนน
+   2) QR    : ตัวสร้าง QR Code จริง (byte mode, version 1-10, ECC L/M)
+   3) Net   : ตัวเชื่อม Multiplayer  (LocalBackend / FirebaseBackend)
+   ===================================================================== */
+const TCE = {};
+
+(function () {
+  const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+  TCE.clamp = clamp;
+
+  /* ---------- สุ่มแบบกำหนด seed ได้ ---------- */
+  TCE.rng = function (seed) {
+    let a = seed >>> 0;
+    return function () {
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  };
+  TCE.shuffle = function (arr, rnd) {
+    rnd = rnd || Math.random;
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
+
+  /* =================================================================
+     1) COLOR
+     ================================================================= */
+  // มุมของลูกบาศก์ RYB (ปริมาณแดง,เหลือง,น้ำเงิน = 0/1)  →  ค่า RGB
+  // ใช้แนว Gosset–Chen (trilinear) แต่ปรับมุมให้ตรงกับสีบนวงจรสีของเกม
+  const CORNER = {
+    '000': [255, 255, 255],  // ไม่มีสีเลย = กระดาษขาว
+    '100': [232, 16, 44],    // แดง
+    '010': [255, 230, 0],    // เหลือง
+    '001': [30, 90, 230],    // น้ำเงิน
+    '110': [255, 122, 0],    // ส้ม  (แดง+เหลือง)
+    '011': [31, 168, 74],    // เขียว (เหลือง+น้ำเงิน)
+    '101': [111, 45, 168],   // ม่วง (แดง+น้ำเงิน)
+    '111': [59, 42, 32]      // ครบสามสี = น้ำตาลเข้ม
+  };
+
+  /** r,y,b = 0..100 (ปริมาณสี %)  →  [R,G,B] 0..255 */
+  function rybToRgb(r, y, b) {
+    r = clamp(r, 0, 100) / 100; y = clamp(y, 0, 100) / 100; b = clamp(b, 0, 100) / 100;
+    const out = [0, 0, 0];
+    for (let i = 0; i < 8; i++) {
+      const cr = (i >> 2) & 1, cy = (i >> 1) & 1, cb = i & 1;
+      const w = (cr ? r : 1 - r) * (cy ? y : 1 - y) * (cb ? b : 1 - b);
+      if (w === 0) continue;
+      const c = CORNER['' + cr + cy + cb];
+      out[0] += w * c[0]; out[1] += w * c[1]; out[2] += w * c[2];
+    }
+    return out.map(v => Math.round(clamp(v, 0, 255)));
+  }
+  const hex2 = n => n.toString(16).padStart(2, '0');
+  const rgbToHex = c => '#' + hex2(c[0]) + hex2(c[1]) + hex2(c[2]);
+
+  /* ---------- sRGB → CIE Lab, ΔE76 ---------- */
+  function rgbToLab(c) {
+    const f = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    const r = f(c[0]), g = f(c[1]), b = f(c[2]);
+    let x = (r * 0.4124564 + g * 0.3575761 + b * 0.1804375) / 0.95047;
+    let y = (r * 0.2126729 + g * 0.7151522 + b * 0.0721750);
+    let z = (r * 0.0193339 + g * 0.1191920 + b * 0.9503041) / 1.08883;
+    const t = v => v > 0.008856 ? Math.cbrt(v) : 7.787 * v + 16 / 116;
+    x = t(x); y = t(y); z = t(z);
+    return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+  }
+  function deltaE(c1, c2) {
+    const a = rgbToLab(c1), b = rgbToLab(c2);
+    return Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+  }
+
+  /* ---------- วงจรสี 12 สี (เรียงตามเข็มนาฬิกา เริ่มที่บนสุด) ---------- */
+  const DEF = [
+    { id: 'Y',  name: 'เหลือง',       tier: 1, ryb: [0, 100, 0] },
+    { id: 'YO', name: 'เหลืองส้ม',    tier: 3, ryb: [50, 100, 0] },
+    { id: 'O',  name: 'ส้ม',          tier: 2, ryb: [100, 100, 0] },
+    { id: 'RO', name: 'แดงส้ม',       tier: 3, ryb: [100, 50, 0] },
+    { id: 'R',  name: 'แดง',          tier: 1, ryb: [100, 0, 0] },
+    { id: 'RV', name: 'แดงม่วง',      tier: 3, ryb: [100, 0, 50] },
+    { id: 'V',  name: 'ม่วง',         tier: 2, ryb: [100, 0, 100] },
+    { id: 'BV', name: 'น้ำเงินม่วง',  tier: 3, ryb: [50, 0, 100] },
+    { id: 'B',  name: 'น้ำเงิน',      tier: 1, ryb: [0, 0, 100] },
+    { id: 'BG', name: 'น้ำเงินเขียว', tier: 3, ryb: [0, 50, 100] },
+    { id: 'G',  name: 'เขียว',        tier: 2, ryb: [0, 100, 100] },
+    { id: 'YG', name: 'เหลืองเขียว',  tier: 3, ryb: [0, 100, 50] }
+  ];
+  // วรรณะตามบทเรียน: ตำแหน่ง 0-5 (เหลือง→แดงม่วง) = ร้อน, 6-11 (ม่วง→เหลืองเขียว) = เย็น
+  // สีรอยต่อที่ตีความได้ทั้งสองฝั่ง: แดงม่วง (5), ม่วง (6), เหลืองเขียว (11)
+  const BORDERLINE = [5, 6, 11];
+  const WHEEL = DEF.map((d, i) => {
+    const rgb = rybToRgb(d.ryb[0], d.ryb[1], d.ryb[2]);
+    return Object.assign({ idx: i, rgb, hex: rgbToHex(rgb), group: i <= 5 ? 'warm' : 'cool', borderline: BORDERLINE.includes(i) }, d);
+  });
+  const IDX = {}; WHEEL.forEach(w => IDX[w.id] = w.idx);
+
+  const circDist = (a, b) => { const d = Math.abs(a - b) % 12; return Math.min(d, 12 - d); };
+  const opposite = i => (i + 6) % 12;
+  /** วรรณะที่ถูกต้อง: ตามบทเรียน หรือเป็นสีรอยต่อที่ยอมรับได้ทั้งสองฝั่ง */
+  function acceptsGroup(i, group) {
+    const w = WHEEL[i];
+    return w.group === group || w.borderline;
+  }
+
+  /**
+   * ผสมสี 2 สีบนวงจร (ใช้ในด่าน 1)
+   * return {kind, result?}  kind: same | secondary | tertiary | neutral | muddy
+   */
+  function classifyMix(a, b) {
+    if (a === b) return { kind: 'same' };
+    const d = circDist(a, b), A = WHEEL[a], B = WHEEL[b];
+    const delta = (b - a + 12) % 12;                               // ระยะตามเข็มนาฬิกาจาก a ไป b
+    // กึ่งกลางของส่วนโค้งที่สั้นกว่า (ใช้ได้เมื่อ d เป็นเลขคู่)
+    const mid = delta <= 6 ? (a + d / 2) % 12 : (b + d / 2) % 12;
+    if (d === 6) return { kind: 'neutral' };                       // ตรงข้ามกัน → หม่น
+    if (A.tier === 1 && B.tier === 1) return { kind: 'secondary', result: mid };   // แม่สี+แม่สี (d=4)
+    if (d === 2 && A.tier + B.tier === 3) return { kind: 'tertiary', result: mid }; // แม่สี + สีขั้นที่ 2 ที่อยู่ติดกัน
+    if (A.tier === 2 && B.tier === 2) return { kind: 'muddy' };    // ส้ม+เขียว ฯลฯ มีแม่สีครบทั้ง 3 → หม่น
+    if (d === 2 || d === 4) return { kind: 'known', result: mid }; // ได้สีที่อยู่ในวงจรอยู่แล้ว
+    return { kind: 'muddy' };                                      // เช่น สีขั้นที่ 2 + สีขั้นที่ 2 (มีครบ 3 แม่สี)
+  }
+
+  /* ---------- ระบบคะแนนด่านสุดท้าย (100 คะแนน/รอบ) ---------- */
+  const TIME_FULL = 5, TIME_ZERO = 45;      // ≤5 วิ เต็ม, ≥45 วิ = 0
+  function scoreRound(targetRgb, mixRgb, seconds) {
+    const dE = deltaE(targetRgb, mixRgb);
+    const pct = clamp(1 - (dE - 3) / 42, 0, 1);                    // ΔE ≤ 3 = 100%
+    const closePts = Math.round(70 * pct);                         // ความใกล้เคียง 70
+    const timeFactor = clamp((TIME_ZERO - seconds) / (TIME_ZERO - TIME_FULL), 0, 1);
+    const acc = Math.min(1, pct / 0.5);                            // กันการกดส่งเร็วโดยไม่ผสมจริง
+    const timePts = Math.round(30 * timeFactor * acc);             // ความรวดเร็ว 30
+    return { dE, pct, closePts, timePts, total: closePts + timePts };
+  }
+
+  /** สร้างสีเป้าหมาย n รอบ (ปริมาณ [แดง,เหลือง,น้ำเงิน]) ง่าย → ยาก */
+  function makeTargets(n, seed) {
+    const rnd = TCE.rng(seed == null ? (Math.random() * 4294967296) : seed);
+    const steps = [25, 25, 10, 5, 5];
+    const out = [];
+    let guard = 0;
+    while (out.length < n && guard++ < 20000) {
+      const i = out.length, st = steps[Math.min(i, steps.length - 1)];
+      const pick = () => Math.round(rnd() * (100 / st)) * st;
+      const v = [pick(), pick(), pick()];
+      const nz = v.filter(x => x > 0).length;
+      if (i < 2 ? nz !== 2 : nz < 2) continue;
+      const rgb = rybToRgb(v[0], v[1], v[2]);
+      const L = rgbToLab(rgb)[0];
+      if (L < 25 || L > 90) continue;                              // ไม่เข้ม/ซีดจนแยกยาก
+      if (out.some(t => deltaE(rgb, rybToRgb(t[0], t[1], t[2])) < 22)) continue;
+      out.push(v);
+    }
+    return out;
+  }
+
+  TCE.Color = { rybToRgb, rgbToHex, rgbToLab, deltaE, WHEEL, IDX, BORDERLINE, circDist, opposite, acceptsGroup, classifyMix, scoreRound, makeTargets, TIME_FULL, TIME_ZERO };
+
+  /* =================================================================
+     2) QR CODE  (อิงอัลกอริทึมมาตรฐาน ISO/IEC 18004 — byte mode)
+        รองรับ version 1–10, ECC ระดับ L/M  (พอสำหรับ URL ยาวราว 200 ตัวอักษร)
+     ================================================================= */
+  const ECC_PER_BLOCK = { L: [-1, 7, 10, 15, 20, 26, 18, 20, 24, 30, 18], M: [-1, 10, 16, 26, 18, 24, 16, 18, 22, 22, 26] };
+  const NUM_BLOCKS    = { L: [-1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 4],         M: [-1, 1, 1, 1, 2, 2, 4, 4, 4, 5, 5] };
+  const ECC_FORMAT    = { L: 1, M: 0 };
+
+  function rawDataModules(ver) {
+    let r = (16 * ver + 128) * ver + 64;
+    if (ver >= 2) { const na = Math.floor(ver / 7) + 2; r -= (25 * na - 10) * na - 55; if (ver >= 7) r -= 36; }
+    return r;
+  }
+  const dataCodewords = (ver, ecc) => Math.floor(rawDataModules(ver) / 8) - ECC_PER_BLOCK[ecc][ver] * NUM_BLOCKS[ecc][ver];
+
+  function gfMul(x, y) {
+    let z = 0;
+    for (let i = 7; i >= 0; i--) { z = (z << 1) ^ ((z >>> 7) * 0x11D); z ^= ((y >>> i) & 1) * x; }
+    return z;
+  }
+  function rsDivisor(degree) {
+    const res = new Array(degree).fill(0); res[degree - 1] = 1;
+    let root = 1;
+    for (let i = 0; i < degree; i++) {
+      for (let j = 0; j < res.length; j++) { res[j] = gfMul(res[j], root); if (j + 1 < res.length) res[j] ^= res[j + 1]; }
+      root = gfMul(root, 0x02);
+    }
+    return res;
+  }
+  function rsRemainder(data, divisor) {
+    const res = divisor.map(() => 0);
+    for (const b of data) {
+      const factor = b ^ res.shift(); res.push(0);
+      divisor.forEach((coef, i) => { res[i] ^= gfMul(coef, factor); });
+    }
+    return res;
+  }
+  const getBit = (x, i) => ((x >>> i) & 1) !== 0;
+
+  function qrEncode(text, ecc) {
+    ecc = ecc || 'M';
+    const bytes = Array.from(new TextEncoder().encode(text));
+    let ver = 0;
+    for (let v = 1; v <= 10; v++) {
+      const lenBits = v < 10 ? 8 : 16;
+      if (4 + lenBits + 8 * bytes.length <= dataCodewords(v, ecc) * 8) { ver = v; break; }
+    }
+    if (!ver && ecc === 'M') return qrEncode(text, 'L');           // ลองลดระดับ ECC ก่อนยอมแพ้
+    if (!ver) throw new Error('ข้อความยาวเกินไปสำหรับ QR (สูงสุดประมาณ 270 ไบต์)');
+    const size = ver * 4 + 17;
+
+    // --- 1) bit stream ---
+    const bits = [];
+    const put = (val, len) => { for (let i = len - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+    put(0x4, 4); put(bytes.length, ver < 10 ? 8 : 16); bytes.forEach(b => put(b, 8));
+    const capBits = dataCodewords(ver, ecc) * 8;
+    put(0, Math.min(4, capBits - bits.length));
+    put(0, (8 - bits.length % 8) % 8);
+    for (let pad = 0xEC; bits.length < capBits; pad ^= 0xEC ^ 0x11) put(pad, 8);
+    const data = [];
+    for (let i = 0; i < bits.length; i += 8) { let v = 0; for (let k = 0; k < 8; k++) v = (v << 1) | bits[i + k]; data.push(v); }
+
+    // --- 2) Reed-Solomon + interleave ---
+    const nb = NUM_BLOCKS[ecc][ver], eccLen = ECC_PER_BLOCK[ecc][ver];
+    const raw = Math.floor(rawDataModules(ver) / 8);
+    const nShort = nb - raw % nb, shortLen = Math.floor(raw / nb);
+    const div = rsDivisor(eccLen), blocks = [];
+    for (let i = 0, k = 0; i < nb; i++) {
+      const dat = data.slice(k, k + shortLen - eccLen + (i < nShort ? 0 : 1)); k += dat.length;
+      const e = rsRemainder(dat, div);
+      if (i < nShort) dat.push(0);
+      blocks.push(dat.concat(e));
+    }
+    const all = [];
+    for (let i = 0; i < blocks[0].length; i++)
+      blocks.forEach((blk, j) => { if (i !== shortLen - eccLen || j >= nShort) all.push(blk[i]); });
+
+    // --- 3) วางโมดูล ---
+    const mod = [], isFn = [];
+    for (let y = 0; y < size; y++) { mod.push(new Array(size).fill(false)); isFn.push(new Array(size).fill(false)); }
+    const setFn = (x, y, dark) => { mod[y][x] = dark; isFn[y][x] = true; };
+
+    for (let i = 0; i < size; i++) { setFn(6, i, i % 2 === 0); setFn(i, 6, i % 2 === 0); }
+    const finder = (cx, cy) => {
+      for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) {
+        const d = Math.max(Math.abs(dx), Math.abs(dy)), x = cx + dx, y = cy + dy;
+        if (x >= 0 && x < size && y >= 0 && y < size) setFn(x, y, d !== 2 && d !== 4);
+      }
+    };
+    finder(3, 3); finder(size - 4, 3); finder(3, size - 4);
+    // alignment patterns
+    let pos = [];
+    if (ver > 1) {
+      const na = Math.floor(ver / 7) + 2;
+      const step = (ver === 32) ? 26 : Math.ceil((ver * 4 + 4) / (na * 2 - 2)) * 2;
+      pos = [6];
+      for (let p = size - 7; pos.length < na; p -= step) pos.splice(1, 0, p);
+    }
+    for (let i = 0; i < pos.length; i++) for (let j = 0; j < pos.length; j++) {
+      if ((i === 0 && j === 0) || (i === 0 && j === pos.length - 1) || (i === pos.length - 1 && j === 0)) continue;
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++)
+        setFn(pos[i] + dx, pos[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+    }
+    const drawFormat = mask => {
+      const d = (ECC_FORMAT[ecc] << 3) | mask;
+      let rem = d;
+      for (let i = 0; i < 10; i++) rem = (rem << 1) ^ ((rem >>> 9) * 0x537);
+      const f = ((d << 10) | rem) ^ 0x5412;
+      for (let i = 0; i <= 5; i++) setFn(8, i, getBit(f, i));
+      setFn(8, 7, getBit(f, 6)); setFn(8, 8, getBit(f, 7)); setFn(7, 8, getBit(f, 8));
+      for (let i = 9; i < 15; i++) setFn(14 - i, 8, getBit(f, i));
+      for (let i = 0; i < 8; i++) setFn(size - 1 - i, 8, getBit(f, i));
+      for (let i = 8; i < 15; i++) setFn(8, size - 15 + i, getBit(f, i));
+      setFn(8, size - 8, true);
+    };
+    drawFormat(0);
+    if (ver >= 7) {
+      let rem = ver;
+      for (let i = 0; i < 12; i++) rem = (rem << 1) ^ ((rem >>> 11) * 0x1F25);
+      const vb = (ver << 12) | rem;
+      for (let i = 0; i < 18; i++) {
+        const c = getBit(vb, i), a = size - 11 + i % 3, b = Math.floor(i / 3);
+        setFn(a, b, c); setFn(b, a, c);
+      }
+    }
+    // วางข้อมูลแบบซิกแซก
+    let bi = 0;
+    for (let right = size - 1; right >= 1; right -= 2) {
+      if (right === 6) right = 5;
+      for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) {
+        const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert;
+        if (!isFn[y][x] && bi < all.length * 8) { mod[y][x] = getBit(all[bi >>> 3], 7 - (bi & 7)); bi++; }
+      }
+    }
+    // เลือก mask ที่ penalty ต่ำสุด
+    const applyMask = m => {
+      for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
+        let inv;
+        switch (m) {
+          case 0: inv = (x + y) % 2 === 0; break;
+          case 1: inv = y % 2 === 0; break;
+          case 2: inv = x % 3 === 0; break;
+          case 3: inv = (x + y) % 3 === 0; break;
+          case 4: inv = (Math.floor(x / 3) + Math.floor(y / 2)) % 2 === 0; break;
+          case 5: inv = x * y % 2 + x * y % 3 === 0; break;
+          case 6: inv = (x * y % 2 + x * y % 3) % 2 === 0; break;
+          default: inv = ((x + y) % 2 + x * y % 3) % 2 === 0;
+        }
+        if (!isFn[y][x] && inv) mod[y][x] = !mod[y][x];
+      }
+    };
+    const penalty = () => {
+      let p = 0;
+      const line = get => {
+        let run = 1;
+        for (let i = 1; i < size; i++) {
+          if (get(i) === get(i - 1)) { run++; if (run === 5) p += 3; else if (run > 5) p++; } else run = 1;
+        }
+      };
+      for (let y = 0; y < size; y++) line(i => mod[y][i]);
+      for (let x = 0; x < size; x++) line(i => mod[i][x]);
+      for (let y = 0; y < size - 1; y++) for (let x = 0; x < size - 1; x++) {
+        const c = mod[y][x]; if (c === mod[y][x + 1] && c === mod[y + 1][x] && c === mod[y + 1][x + 1]) p += 3;
+      }
+      let dark = 0; mod.forEach(r => r.forEach(c => { if (c) dark++; }));
+      p += (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1) * 10;
+      return p;
+    };
+    let best = 0, bestP = Infinity;
+    for (let m = 0; m < 8; m++) {
+      applyMask(m); drawFormat(m);
+      const p = penalty(); if (p < bestP) { bestP = p; best = m; }
+      applyMask(m);
+    }
+    applyMask(best); drawFormat(best);
+    return { size, version: ver, ecc, mask: best, modules: mod };
+  }
+
+  /** QR → สตริง SVG (ขาว/ดำ พร้อม quiet zone 4 โมดูล) */
+  function qrToSvg(text, opts) {
+    opts = opts || {};
+    const q = qrEncode(text, opts.ecc || 'M'), b = 4, n = q.size + b * 2;
+    let d = '';
+    for (let y = 0; y < q.size; y++) {
+      let x = 0;
+      while (x < q.size) {
+        if (!q.modules[y][x]) { x++; continue; }
+        let w = 1; while (x + w < q.size && q.modules[y][x + w]) w++;
+        d += `M${x + b} ${y + b}h${w}v1h${-w}z`; x += w;
+      }
+    }
+    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges" role="img" aria-label="QR Code"><rect width="${n}" height="${n}" fill="#fff"/><path d="${d}" fill="#000"/></svg>`;
+  }
+  TCE.QR = { encode: qrEncode, toSvg: qrToSvg };
+
+  /* =================================================================
+     3) NET — ระบบ Multiplayer (เลือก backend อัตโนมัติ)
+        - FirebaseBackend : Firebase Realtime Database ผ่าน REST + Server-Sent Events
+                            (ไม่ต้องโหลด SDK  เล่นข้ามอุปกรณ์ได้จริงเมื่อใส่ databaseURL)
+        - LocalBackend    : จำลองด้วย localStorage — ใช้ได้เฉพาะแท็บ/หน้าต่างของเบราว์เซอร์เดียวกัน
+     ================================================================= */
+  const segs = p => String(p).split('/').filter(Boolean);
+  const clone = v => (v === undefined || v === null) ? null : JSON.parse(JSON.stringify(v));
+  function getAt(root, path) {
+    let cur = root;
+    for (const s of segs(path)) { if (cur === null || typeof cur !== 'object' || !(s in cur)) return null; cur = cur[s]; }
+    return cur === undefined ? null : cur;
+  }
+  /** คืน root ใหม่หลังตั้งค่า val ที่ path (val===null = ลบ) */
+  function setAt(root, path, val) {
+    const s = segs(path);
+    if (!s.length) return val;
+    if (root === null || typeof root !== 'object') root = {};
+    let cur = root;
+    for (let i = 0; i < s.length - 1; i++) {
+      if (cur[s[i]] === null || typeof cur[s[i]] !== 'object') cur[s[i]] = {};
+      cur = cur[s[i]];
+    }
+    const last = s[s.length - 1];
+    if (val === null || val === undefined) delete cur[last]; else cur[last] = val;
+    return root;
+  }
+
+  class LocalBackend {
+    constructor(storage, win) {
+      this.kind = 'local'; this.key = 'tce_local_db_v1'; this.store = storage; this.subs = [];
+      if (win && win.addEventListener) win.addEventListener('storage', e => { if (e.key === this.key) this._notify(); });
+    }
+    _read() { try { return JSON.parse(this.store.getItem(this.key)) || {}; } catch (e) { return {}; } }
+    _write(db) { this.store.setItem(this.key, JSON.stringify(db)); }
+    async get(path) { return clone(getAt(this._read(), path)); }
+    async set(path, val) { this._write(setAt(this._read(), path, clone(val))); this._notify(); }
+    subscribe(path, cb) {
+      const sub = { path, cb, last: undefined };
+      this.subs.push(sub);
+      Promise.resolve().then(() => this._fire(sub, true));
+      return () => { this.subs = this.subs.filter(s => s !== sub); };
+    }
+    _fire(sub, force) {
+      const v = getAt(this._read(), sub.path), j = JSON.stringify(v);
+      if (!force && j === sub.last) return;
+      sub.last = j; sub.cb(clone(v));
+    }
+    _notify() { this.subs.slice().forEach(s => this._fire(s, false)); }
+    onStatus() { /* local เสมอออนไลน์ */ }
+  }
+
+  class FirebaseBackend {
+    constructor(baseUrl, fetchFn, ES) {
+      this.kind = 'firebase'; this.base = String(baseUrl).replace(/\/+$/, '');
+      this.fetch = fetchFn || (typeof fetch !== 'undefined' ? fetch.bind(globalThis) : null);
+      this.ES = ES || (typeof EventSource !== 'undefined' ? EventSource : null);
+      this.statusCb = null;
+    }
+    onStatus(cb) { this.statusCb = cb; }
+    _st(s) { if (this.statusCb) this.statusCb(s); }
+    url(path) { return `${this.base}/${segs(path).map(encodeURIComponent).join('/')}.json`; }
+    async get(path) {
+      const r = await this.fetch(this.url(path));
+      if (!r.ok) throw new Error('Firebase HTTP ' + r.status);
+      return r.json();
+    }
+    async set(path, val) {
+      const r = await this.fetch(this.url(path), { method: 'PUT', body: JSON.stringify(val === undefined ? null : val) });
+      if (!r.ok) throw new Error('Firebase HTTP ' + r.status);
+    }
+    subscribe(path, cb) {
+      let cache = null, es = null, timer = null, closed = false;
+      const emit = () => cb(clone(cache));
+      const apply = (p, data) => { cache = setAt(cache, p, data === undefined ? null : data); };
+      if (this.ES) {
+        es = new this.ES(this.url(path));
+        es.onopen = () => this._st('online');
+        es.onerror = () => this._st('offline');           // EventSource เชื่อมต่อใหม่เองอัตโนมัติ
+        es.addEventListener('put', e => {
+          const m = JSON.parse(e.data); apply(m.path, m.data); emit(); this._st('online');
+        });
+        es.addEventListener('patch', e => {
+          const m = JSON.parse(e.data);
+          Object.keys(m.data || {}).forEach(k => apply((m.path === '/' ? '' : m.path) + '/' + k, m.data[k]));
+          emit();
+        });
+        ['cancel', 'auth_revoked'].forEach(n => es.addEventListener(n, () => this._st('offline')));
+      } else {                                            // fallback: โพลลิ่งทุก 1.2 วินาที
+        let last;
+        const tick = async () => {
+          if (closed) return;
+          try { cache = await this.get(path); const j = JSON.stringify(cache); if (j !== last) { last = j; emit(); } this._st('online'); }
+          catch (e) { this._st('offline'); }
+          timer = setTimeout(tick, 1200);
+        };
+        tick();
+      }
+      return () => { closed = true; if (es) es.close(); if (timer) clearTimeout(timer); };
+    }
+  }
+
+  TCE.Net = {
+    LocalBackend, FirebaseBackend, getAt, setAt,
+    /** เลือก backend: มี databaseURL → Firebase, ไม่มี → Local */
+    create(databaseURL, storage, win) {
+      if (databaseURL && /^https?:\/\//.test(databaseURL)) return new FirebaseBackend(databaseURL);
+      return new LocalBackend(storage, win);
+    }
+  };
+
+  /* ---------- กติกาห้องแข่งขัน (ฟังก์ชันล้วน ทดสอบได้) ---------- */
+  const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  TCE.Room = {
+    CODE_CHARS,
+    newCode() { let s = ''; for (let i = 0; i < 4; i++) s += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]; return s; },
+    normalizeCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); },
+    newId() { return Math.random().toString(36).slice(2, 10); },
+    /** จัดอันดับ: คะแนนรวมมาก → เวลารวมน้อย → เข้าห้องก่อน */
+    rank(players) {
+      const arr = Object.keys(players || {}).map(id => Object.assign({ id }, players[id]));
+      arr.sort((a, b) => (b.score || 0) - (a.score || 0) || (a.totalTime || 0) - (b.totalTime || 0) || (a.joinedAt || 0) - (b.joinedAt || 0));
+      let place = 0, prev = null;
+      arr.forEach((p, i) => {
+        const key = (p.score || 0) + '|' + (p.totalTime || 0);
+        if (key !== prev) { place = i + 1; prev = key; }
+        p.place = place;
+      });
+      return arr;
+    },
+    allFinished(players) {
+      const ids = Object.keys(players || {});
+      return ids.length > 0 && ids.every(id => players[id].finished);
+    }
+  };
+})();
+
+if (typeof module !== 'undefined' && module.exports) module.exports = TCE;
+
+;
+/* =====================================================================
+   SFX — เสียงทั้งหมดสังเคราะห์ด้วย WebAudio (ไม่ต้องมีไฟล์เสียง)
+   บรรยากาศห้องศิลปะ · นาฬิกา · ประตู · สิ่งมีชีวิต · ตอบถูก/ผิด · ประกาศ
+   ===================================================================== */
+const Sfx = (function () {
+  let ctx = null, master = null, noiseBuf = null, ambient = null, clockTimer = null, creakTimer = null;
+  let muted = false;
+  try { muted = localStorage.getItem('tce_muted') === '1'; } catch (e) {}
+
+  function init() {
+    if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    ctx = new AC();
+    master = ctx.createGain(); master.gain.value = muted ? 0 : 0.9; master.connect(ctx.destination);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  }
+  const ok = () => !!ctx && !muted;
+  const now = () => ctx.currentTime;
+
+  function env(g, t, a, peak, d, end) {          // attack-decay envelope
+    g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(Math.max(peak, 0.0002), t + a);
+    g.gain.exponentialRampToValueAtTime(end || 0.0001, t + a + d);
+  }
+  function tone(type, f1, f2, dur, vol, delay, dest) {
+    if (!ok()) return;
+    const t = now() + (delay || 0), o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = type; o.frequency.setValueAtTime(f1, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    env(g, t, 0.01, vol, dur);
+    o.connect(g); g.connect(dest || master); o.start(t); o.stop(t + dur + 0.05);
+  }
+  function noise(dur, vol, filtType, freq, q, delay, freq2) {
+    if (!ok()) return;
+    const t = now() + (delay || 0), s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+    s.buffer = noiseBuf; f.type = filtType; f.frequency.setValueAtTime(freq, t); f.Q.value = q || 1;
+    if (freq2) f.frequency.exponentialRampToValueAtTime(freq2, t + dur);
+    env(g, t, 0.01, vol, dur);
+    s.connect(f); f.connect(g); g.connect(master); s.start(t, Math.random()); s.stop(t + dur + 0.05);
+  }
+
+  const api = {
+    init,
+    get muted() { return muted; },
+    setMuted(m) {
+      muted = m; try { localStorage.setItem('tce_muted', m ? '1' : '0'); } catch (e) {}
+      if (master) master.gain.setTargetAtTime(m ? 0 : 0.9, ctx.currentTime, 0.05);
+      if (m && window.speechSynthesis) window.speechSynthesis.cancel();
+    },
+
+    /* ----- บรรยากาศ ----- */
+    tick(accent) { noise(0.05, accent ? 0.35 : 0.22, 'bandpass', accent ? 1500 : 1100, 6); tone('square', accent ? 900 : 700, 400, 0.03, 0.02); },
+    startClock() { this.stopClock(); let n = 0; clockTimer = setInterval(() => this.tick(++n % 2 === 0), 1000); },
+    stopClock() { clearInterval(clockTimer); clockTimer = null; },
+    startAmbient() {
+      if (!ctx || ambient) return;
+      const g = ctx.createGain(); g.gain.value = 0.0001; g.connect(master);
+      g.gain.exponentialRampToValueAtTime(0.16, ctx.currentTime + 3);
+      const mk = (f, type, vol) => { const o = ctx.createOscillator(), og = ctx.createGain(); o.type = type; o.frequency.value = f; og.gain.value = vol; o.connect(og); og.connect(g); o.start(); return o; };
+      const o1 = mk(55, 'sine', 0.5), o2 = mk(82.6, 'sine', 0.25), o3 = mk(58, 'triangle', 0.15);
+      const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.13; lg.gain.value = 3; lfo.connect(lg); lg.connect(o3.frequency); lfo.start();
+      const s = ctx.createBufferSource(), nf = ctx.createBiquadFilter(), ng = ctx.createGain();   // เสียงลมเบา ๆ
+      s.buffer = noiseBuf; s.loop = true; nf.type = 'lowpass'; nf.frequency.value = 380; ng.gain.value = 0.35;
+      s.connect(nf); nf.connect(ng); ng.connect(g); s.start();
+      ambient = { g, nodes: [o1, o2, o3, lfo, s] };
+      creakTimer = setInterval(() => {                       // เสียงลึกลับสุ่ม ๆ
+        const r = Math.random();
+        if (r < 0.35) this.creak(); else if (r < 0.6) this.drip(); else if (r < 0.75) this.knock(1);
+      }, 6500);
+    },
+    stopAmbient() {
+      clearInterval(creakTimer); creakTimer = null;
+      if (!ambient) return; const a = ambient; ambient = null;
+      a.g.gain.setTargetAtTime(0.0001, ctx.currentTime, 0.4);
+      setTimeout(() => a.nodes.forEach(n => { try { n.stop(); } catch (e) {} }), 1800);
+    },
+    creak() { tone('sawtooth', 120 + Math.random() * 40, 60 + Math.random() * 30, 0.9, 0.05); noise(0.8, 0.04, 'bandpass', 500, 8, 0, 200); },
+    drip() { tone('sine', 1500, 700, 0.12, 0.06); tone('sine', 1500, 700, 0.12, 0.025, 0.14); },
+    knock(n) { for (let i = 0; i < (n || 3); i++) { tone('sine', 140, 55, 0.18, 0.5, i * 0.28); noise(0.08, 0.25, 'lowpass', 400, 1, i * 0.28); } },
+
+    /* ----- ฉาก/สิ่งมีชีวิต ----- */
+    growl(strength) {                                      // เสียงสิ่งมีชีวิต (การ์ตูน ไม่สยอง)
+      if (!ok()) return; const s = strength || 1, t = now(), o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter(), lfo = ctx.createOscillator(), lg = ctx.createGain();
+      o.type = 'sawtooth'; o2.type = 'square'; o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(42, t + 1.2 * s);
+      o2.frequency.setValueAtTime(35, t); lfo.frequency.value = 14; lg.gain.value = 18; lfo.connect(lg); lg.connect(o.frequency);
+      f.type = 'lowpass'; f.frequency.setValueAtTime(260, t); f.frequency.exponentialRampToValueAtTime(110, t + 1.2 * s);
+      env(g, t, 0.15, 0.28 * s, 1.1 * s);
+      o.connect(f); o2.connect(f); f.connect(g); g.connect(master);
+      [o, o2, lfo].forEach(n => { n.start(t); n.stop(t + 1.5 * s + 0.2); });
+    },
+    meow() {                                               // เสียงแมว (สังเคราะห์)
+      if (!ok()) return; const t = now(), o = ctx.createOscillator(), g = ctx.createGain(), f = ctx.createBiquadFilter();
+      o.type = 'sawtooth'; o.frequency.setValueAtTime(480, t); o.frequency.linearRampToValueAtTime(880, t + 0.2); o.frequency.exponentialRampToValueAtTime(400, t + 0.75);
+      f.type = 'bandpass'; f.Q.value = 3; f.frequency.setValueAtTime(900, t); f.frequency.linearRampToValueAtTime(1900, t + 0.22); f.frequency.linearRampToValueAtTime(800, t + 0.75);
+      env(g, t, 0.06, 0.3, 0.7); o.connect(f); f.connect(g); g.connect(master); o.start(t); o.stop(t + 0.9);
+    },
+    squeak() { tone('sine', 900, 1500, 0.12, 0.07); tone('sine', 1200, 700, 0.15, 0.06, 0.12); },
+    door(kind) {
+      if (kind === 'unlock') { tone('square', 300, 180, 0.08, 0.12); tone('square', 520, 330, 0.1, 0.1, 0.12); noise(0.1, 0.2, 'highpass', 2500, 1, 0.1); }
+      else if (kind === 'open') { tone('sawtooth', 90, 200, 1.6, 0.1); noise(1.6, 0.12, 'bandpass', 700, 5, 0, 300); tone('sine', 60, 40, 0.5, 0.4, 1.5); }
+      else { tone('square', 200, 110, 0.12, 0.18); noise(0.15, 0.3, 'bandpass', 900, 3); }       // ล็อก/สั่นลูกบิด
+    },
+    blackout() { tone('sine', 220, 30, 0.8, 0.3); noise(0.5, 0.2, 'lowpass', 600, 1, 0, 80); },
+    whoosh() { noise(0.5, 0.18, 'bandpass', 400, 2, 0, 3000); },
+    zap() { noise(0.18, 0.2, 'highpass', 3000, 1); tone('sawtooth', 2200, 200, 0.18, 0.08); },
+    splash() { noise(0.2, 0.2, 'bandpass', 1800, 2, 0, 700); tone('sine', 500, 250, 0.12, 0.1); },
+    swirl() { for (let i = 0; i < 5; i++) tone('sine', 330 + i * 55, 440 + i * 70, 0.2, 0.07, i * 0.11); noise(0.7, 0.07, 'bandpass', 900, 3, 0, 2000); },
+
+    /* ----- ตอบถูก/ผิด ----- */
+    good() { [523, 659, 784, 1047].forEach((f, i) => { tone('triangle', f, 0, 0.35, 0.18, i * 0.075); tone('sine', f * 2, 0, 0.3, 0.05, i * 0.075); }); },
+    pick() { tone('sine', 620, 880, 0.1, 0.14); },
+    bad() { tone('sawtooth', 190, 120, 0.28, 0.14); tone('square', 140, 90, 0.3, 0.07, 0.05); },
+    hint() { tone('sine', 880, 0, 0.18, 0.12); tone('sine', 1320, 0, 0.3, 0.1, 0.12); },
+    complete() { [392, 523, 659, 784, 1047, 1319].forEach((f, i) => { tone('triangle', f, 0, 0.6, 0.18, i * 0.1); }); tone('sine', 196, 0, 1.4, 0.2); },
+    fanfare() { const n = [523, 523, 523, 659, 784, 659, 784, 1047]; const d = [0, .14, .28, .42, .7, .98, 1.1, 1.38]; n.forEach((f, i) => { tone('sawtooth', f, 0, i === 7 ? 1.2 : 0.2, 0.1, d[i]); tone('triangle', f / 2, 0, i === 7 ? 1.2 : 0.2, 0.15, d[i]); }); },
+    pa() {                                                 // ติ๊งต่อง ก่อนประกาศ
+      tone('sine', 880, 0, 0.5, 0.22); tone('sine', 660, 0, 0.7, 0.22, 0.4); noise(1.2, 0.03, 'bandpass', 2000, 2, 0, 1000);
+    },
+    countdown(go) { tone('square', go ? 1200 : 700, 0, go ? 0.5 : 0.15, 0.12); },
+
+    /* ----- เสียงพูด (ถ้าเครื่องมีเสียงภาษาไทย) ----- */
+    speak(text) {
+      if (muted || !window.speechSynthesis) return;
+      try {
+        const vs = speechSynthesis.getVoices().filter(v => /^th/i.test(v.lang));
+        if (!vs.length) return;
+        const u = new SpeechSynthesisUtterance(text); u.lang = 'th-TH'; u.voice = vs[0]; u.pitch = 0.6; u.rate = 0.85; u.volume = 0.9;
+        speechSynthesis.cancel(); speechSynthesis.speak(u);
+      } catch (e) {}
+    }
+  };
+  if (window.speechSynthesis) { try { speechSynthesis.getVoices(); } catch (e) {} }
+  return api;
+})();
+
+;
+/* =====================================================================
+   SCENE — ฉากห้องศิลปะตอนกลางคืน (SVG), สิ่งมีชีวิต, แสงไฟ, เอฟเฟกต์อนุภาค,
+           ภาพประกอบ Cutscene (ประตู / ทางออก)
+   ===================================================================== */
+const Scene = (function () {
+  const WH = TCE.Color.WHEEL, hexOf = i => WH[i].hex;
+  let host, svgEl, maxPan = 0, panV = 0;
+
+  function sceneSVG() {
+    const rnd = TCE.rng(77);
+    let stars = '';
+    for (let i = 0; i < 30; i++) stars += `<circle class="star" style="animation-delay:${(rnd() * 4).toFixed(1)}s" cx="${(66 + rnd() * 168).toFixed(0)}" cy="${(66 + rnd() * 100).toFixed(0)}" r="${(0.8 + rnd() * 1.2).toFixed(1)}" fill="#fff"/>`;
+    const jarCols = [0, 2, 4, 6, 8, 10, 1, 3, 5, 7, 9, 11].map(hexOf);
+    let jars = '';
+    jarCols.forEach((c, i) => {
+      const x = 318 + i * 33, y = 330;
+      jars += `<g transform="translate(${x},${y})"><rect x="-11" y="-26" width="22" height="26" rx="4" fill="${c}"/><rect x="-12" y="-31" width="24" height="7" rx="2" fill="#2b2f45"/><rect x="-7" y="-21" width="4" height="14" rx="2" fill="#fff" opacity=".28"/></g>`;
+    });
+    let wall = '';                                    // วงจรสีบนผนัง (โผล่ตั้งแต่ด่านที่ 2)
+    WH.forEach((w, i) => {
+      const a = (i * 30 - 90) * Math.PI / 180;
+      wall += `<circle cx="${(500 + 60 * Math.cos(a)).toFixed(1)}" cy="${(182 + 60 * Math.sin(a)).toFixed(1)}" r="14" fill="${w.hex}"/>`;
+    });
+    let planks = '';
+    [428, 452, 484, 526, 580].forEach((y, i) => { planks += `<line x1="0" x2="1000" y1="${y}" y2="${y}" stroke="#000" stroke-opacity="${0.18 + i * 0.05}" stroke-width="${1 + i * 0.6}"/>`; });
+    for (let i = 0; i < 14; i++) planks += `<line x1="${i * 80 + 20}" y1="410" x2="${(i * 80 + 20 - 500) * 1.5 + 500}" y2="600" stroke="#000" stroke-opacity=".16"/>`;
+    const pin = (x, y, c1, c2, rot) => `<g transform="translate(${x},${y}) rotate(${rot})"><rect x="-22" y="-28" width="44" height="56" fill="#e9e2cf"/><circle cx="-6" cy="-6" r="13" fill="${c1}"/><circle cx="8" cy="8" r="11" fill="${c2}"/><circle cx="0" cy="-26" r="3" fill="#d33"/></g>`;
+
+    return `
+<svg id="scene-svg" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<defs>
+ <linearGradient id="gWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#232a52"/><stop offset="1" stop-color="#0e1226"/></linearGradient>
+ <linearGradient id="gFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a281d"/><stop offset="1" stop-color="#0d0908"/></linearGradient>
+ <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#040922"/><stop offset="1" stop-color="#1d2f68"/></linearGradient>
+ <linearGradient id="gBoard" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22362f"/><stop offset="1" stop-color="#16231f"/></linearGradient>
+ <radialGradient id="gLamp"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".9"/><stop offset=".5" stop-color="#ffd47a" stop-opacity=".25"/><stop offset="1" stop-color="#ffd47a" stop-opacity="0"/></radialGradient>
+ <radialGradient id="gMoon"><stop offset="0" stop-color="#fff7cf" stop-opacity=".9"/><stop offset="1" stop-color="#fff7cf" stop-opacity="0"/></radialGradient>
+ <linearGradient id="gLeak" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe8ff" stop-opacity=".9"/><stop offset="1" stop-color="#bfe8ff" stop-opacity="0"/></linearGradient>
+ <clipPath id="doorGlass"><rect x="822" y="132" width="96" height="84" rx="4"/></clipPath>
+</defs>
+
+<!-- ผนัง/พื้น -->
+<rect width="1000" height="412" fill="url(#gWall)"/>
+<rect y="336" width="1000" height="76" fill="#161b38"/><rect y="333" width="1000" height="5" fill="#2d3563"/>
+<rect y="410" width="1000" height="190" fill="url(#gFloor)"/>${planks}
+
+<!-- หน้าต่าง + พระจันทร์ -->
+<g id="win">
+ <rect x="52" y="52" width="196" height="208" rx="6" fill="#2c3260"/>
+ <rect x="60" y="60" width="180" height="192" fill="url(#gSky)"/>${stars}
+ <circle cx="186" cy="112" r="48" fill="url(#gMoon)"/><circle cx="186" cy="112" r="22" fill="#f6f2d6"/>
+ <circle cx="178" cy="106" r="5" fill="#e0dbb8"/><circle cx="194" cy="120" r="4" fill="#e0dbb8"/>
+ <path d="M60 252 L60 214 L84 214 L84 196 L104 196 L104 224 L128 224 L128 188 L150 188 L150 232 L176 232 L176 206 L240 206 L240 252Z" fill="#050914"/>
+ <rect x="147" y="60" width="6" height="192" fill="#2c3260"/><rect x="60" y="154" width="180" height="6" fill="#2c3260"/>
+ <path d="M46 46 Q86 120 58 268 L46 268Z" fill="#4a2152"/><path d="M254 46 Q214 120 242 268 L254 268Z" fill="#4a2152"/>
+</g>
+
+<!-- ผนัง: ภาพวาดที่ปักไว้ -->
+${pin(285, 190, hexOf(4), hexOf(0), -6)}${pin(742, 170, hexOf(8), hexOf(10), 5)}${pin(742, 250, hexOf(6), hexOf(2), -4)}
+
+<!-- กระดานดำ + นาฬิกา -->
+<g id="board">
+ <rect x="316" y="92" width="368" height="186" rx="6" fill="#5d3b24"/>
+ <rect x="324" y="100" width="352" height="170" rx="3" fill="url(#gBoard)"/>
+ <path d="M340 130 q40 -14 70 0 M560 232 q50 10 90 -6 M360 240 q30 -8 60 2" stroke="#fff" stroke-opacity=".08" stroke-width="10" fill="none" stroke-linecap="round"/>
+ <rect x="330" y="270" width="340" height="7" fill="#7a5233"/><rect x="560" y="264" width="26" height="6" rx="2" fill="#f3efe0"/><rect x="594" y="264" width="20" height="6" rx="2" fill="#f2a6c8"/>
+ <g id="wallWheel" class="wall-wheel">${wall}<circle cx="500" cy="182" r="30" fill="none" stroke="#fff" stroke-opacity=".25" stroke-dasharray="3 5"/><text x="500" y="188" text-anchor="middle" font-size="16" fill="#fff" fill-opacity=".7" font-family="Prompt,sans-serif">12</text></g>
+</g>
+<g id="clock" transform="translate(500,52)">
+ <circle r="31" fill="#dcd5bd" stroke="#3a2a1f" stroke-width="5"/>
+ ${[...Array(12)].map((_, i) => `<line x1="0" y1="-26" x2="0" y2="${i % 3 ? -23 : -20}" stroke="#2a2118" stroke-width="${i % 3 ? 1.5 : 2.5}" transform="rotate(${i * 30})"/>`).join('')}
+ <line x1="0" y1="0" x2="-15" y2="0" stroke="#1d160f" stroke-width="4" stroke-linecap="round"/>
+ <line x1="0" y1="0" x2="0" y2="-22" stroke="#1d160f" stroke-width="3" stroke-linecap="round"/>
+ <line class="sec" x1="0" y1="6" x2="0" y2="-25" stroke="#c4262e" stroke-width="1.6"/><circle r="3" fill="#c4262e"/>
+</g>
+
+<!-- เคาน์เตอร์ + ขวดสี 12 สี -->
+<rect x="296" y="330" width="408" height="82" fill="#3a2518"/><rect x="290" y="326" width="420" height="8" fill="#5a3a24"/>
+<rect x="312" y="344" width="170" height="56" fill="#2e1d13" stroke="#1c110a"/><rect x="518" y="344" width="170" height="56" fill="#2e1d13" stroke="#1c110a"/>
+${jars}
+
+<!-- ขาตั้งภาพ -->
+<g id="easel">
+ <line x1="96" y1="470" x2="126" y2="296" stroke="#6d4a2c" stroke-width="7"/><line x1="170" y1="470" x2="140" y2="296" stroke="#6d4a2c" stroke-width="7"/><line x1="133" y1="470" x2="133" y2="330" stroke="#6d4a2c" stroke-width="6"/>
+ <rect x="70" y="288" width="126" height="102" fill="#f1ecdd"/>
+ <circle cx="108" cy="322" r="22" fill="${hexOf(2)}"/><circle cx="138" cy="344" r="26" fill="${hexOf(10)}"/><circle cx="165" cy="312" r="18" fill="${hexOf(8)}"/>
+ <path d="M76 372 Q110 346 140 366 T192 360" stroke="${hexOf(4)}" stroke-width="8" fill="none" stroke-linecap="round"/>
+ <rect x="76" y="388" width="114" height="8" fill="#6d4a2c"/>
+</g>
+
+<!-- โต๊ะวาดภาพ (หน้า) -->
+<g id="table">
+ <rect x="272" y="520" width="14" height="70" fill="#2a1a10"/><rect x="714" y="520" width="14" height="70" fill="#2a1a10"/>
+ <polygon points="262,468 738,468 786,512 214,512" fill="#7b5230"/>
+ <polygon points="214,512 786,512 786,538 214,538" fill="#533520"/>
+ <ellipse cx="400" cy="490" rx="64" ry="17" fill="#c39a63"/><ellipse cx="428" cy="486" rx="11" ry="4" fill="#3a2a1f"/>
+ <circle cx="366" cy="488" r="6" fill="${hexOf(4)}"/><circle cx="384" cy="480" r="6" fill="${hexOf(0)}"/><circle cx="406" cy="478" r="6" fill="${hexOf(8)}"/><circle cx="373" cy="500" r="5" fill="${hexOf(10)}"/><circle cx="396" cy="497" r="5" fill="${hexOf(2)}"/><circle cx="414" cy="494" r="5" fill="${hexOf(6)}"/>
+ <polygon points="498,478 560,476 566,498 492,501" fill="#f4f0e4"/><polygon points="504,474 566,472 570,492 500,496" fill="#e6e1d0"/>
+ <rect x="602" y="470" width="30" height="34" rx="4" fill="#3a4a7a"/>
+ <line x1="612" y1="470" x2="604" y2="440" stroke="#8a5a2d" stroke-width="3"/><line x1="620" y1="470" x2="622" y2="436" stroke="#8a5a2d" stroke-width="3"/><line x1="626" y1="470" x2="640" y2="442" stroke="#8a5a2d" stroke-width="3"/>
+ <ellipse cx="604" cy="438" rx="4" ry="7" fill="${hexOf(4)}"/><ellipse cx="622" cy="434" rx="4" ry="7" fill="${hexOf(8)}"/><ellipse cx="641" cy="440" rx="4" ry="7" fill="${hexOf(0)}"/>
+</g>
+
+<!-- ประตู (ถูกล็อก) -->
+<g id="door">
+ <rect x="786" y="96" width="168" height="330" fill="#1a1022"/>
+ <rect x="798" y="110" width="144" height="316" fill="#43303c"/>
+ <rect x="822" y="132" width="96" height="84" rx="4" fill="#070914"/>
+ <g clip-path="url(#doorGlass)"><rect x="822" y="132" width="96" height="84" fill="#0b1226"/>
+  <g id="doorSil" class="door-sil"><ellipse cx="870" cy="190" rx="26" ry="42" fill="#02030a"/><circle cx="860" cy="168" r="5" fill="#d8ff5a"/><circle cx="878" cy="168" r="5" fill="#d8ff5a"/><circle cx="860" cy="168" r="2" fill="#000"/><circle cx="878" cy="168" r="2" fill="#000"/></g></g>
+ <rect x="822" y="132" width="96" height="84" rx="4" fill="none" stroke="#6c4b5c" stroke-width="4"/>
+ <rect x="822" y="238" width="96" height="62" rx="3" fill="none" stroke="#2c1d27" stroke-width="3"/><rect x="822" y="320" width="96" height="86" rx="3" fill="none" stroke="#2c1d27" stroke-width="3"/>
+ <circle cx="818" cy="318" r="7" fill="#c5a45a"/><rect x="814" y="312" width="4" height="12" fill="#8a6f33"/>
+ <g id="bolts">
+  ${[0, 1, 2].map(i => `<g class="bolt locked" id="bolt${i}" transform="translate(930,${190 + i * 70})"><rect x="-14" y="-6" width="26" height="12" rx="3" fill="#7d838f"/><circle class="led" cx="-18" cy="0" r="4"/></g>`).join('')}
+ </g>
+ <g id="exitSign" class="exit-sign"><rect x="826" y="76" width="88" height="22" rx="4" fill="#0b3b22"/><text x="870" y="92" text-anchor="middle" font-size="14" font-weight="700" fill="#5dffa0" font-family="Prompt,sans-serif" letter-spacing="2">EXIT</text></g>
+ <rect id="leak" x="798" y="424" width="144" height="10" fill="url(#gLeak)" opacity=".5"/>
+</g>
+
+<!-- ไฟเพดาน -->
+<g id="lamp">
+ <ellipse id="lampGlow" cx="500" cy="230" rx="480" ry="300" fill="url(#gLamp)"/>
+ <line x1="500" y1="0" x2="500" y2="14" stroke="#111" stroke-width="3"/><path d="M470 30 L478 12 H522 L530 30Z" fill="#2d2d3d"/><ellipse cx="500" cy="30" rx="30" ry="5" fill="#fff4b8"/>
+</g>
+</svg>`;
+  }
+
+  function measure() {
+    if (!host) return;
+    const w = host.getBoundingClientRect().width, vw = window.innerWidth;
+    maxPan = Math.max(0, (w - vw) / 2);
+    apply(0);
+  }
+  function apply(ms) {
+    host.style.transitionDuration = (ms || 0) + 'ms';
+    host.style.transform = `translateX(calc(-50% + ${(-panV * maxPan).toFixed(1)}px))`;
+  }
+
+  return {
+    init() {
+      host = document.getElementById('scene');
+      host.innerHTML = sceneSVG();
+      svgEl = host.querySelector('svg');
+      measure(); window.addEventListener('resize', measure);
+    },
+    /** แพนกล้อง: -1 = ดูฝั่งซ้ายสุด (หน้าต่าง/ขาตั้งภาพ), 0 = กลาง, 1 = ดูฝั่งขวาสุด (ประตู) */
+    pan(v, ms) { panV = Math.max(-1, Math.min(1, v)); apply(ms == null ? 1400 : ms); },
+    get maxPan() { return maxPan; },
+    /** ตั้งสภาพห้องตามด่าน */
+    setStage(n) {
+      document.body.dataset.stage = n;
+      const lamp = { 1: 0.5, 2: 0.85, 3: 0.55, 4: 0.7 }[n] || 0.5;
+      host.style.setProperty('--lamp', lamp);
+      host.classList.toggle('wheel-on', n >= 2);
+      host.classList.toggle('exit-on', n >= 4);
+      [0, 1, 2].forEach(i => svgEl.querySelector('#bolt' + i).classList.toggle('locked', i >= n - 1));
+      const target = { 1: -0.25, 2: 0.05, 3: 0.55, 4: 1 }[n];
+      this.pan(target == null ? 0 : target, 1600);
+    },
+    openBolt(i) { svgEl.querySelector('#bolt' + i).classList.remove('locked'); },
+    silPass() { const s = svgEl.querySelector('#doorSil'); s.classList.remove('go'); void s.getBoundingClientRect(); s.classList.add('go'); },
+    el() { return host; }
+  };
+})();
+
+/* ---------------- สิ่งมีชีวิต (overlay HTML + SVG) ---------------- */
+const Creatures = (function () {
+  const PAINT = TCE.Color.WHEEL;
+  let root, level = 0, list = {};
+
+  const eye = (cx, cy, r) => `<g class="eye" style="--ex:${cx}px;--ey:${cy}px"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#f6ffd0"/><circle class="pupil" cx="${cx}" cy="${cy}" r="${(r * 0.46).toFixed(1)}" fill="#12081f"/></g>`;
+  const A = () => `<svg viewBox="-80 -130 160 150" overflow="visible"><g class="cr-in">
+    <path class="cr-body" d="M-62,2 C-74,-60 -42,-112 0,-114 C46,-116 76,-62 64,2 C52,14 32,6 24,16 C16,28 6,8 -6,18 C-18,30 -28,10 -40,16 C-52,22 -60,12 -62,2Z" fill="#1c1033" stroke="#7b4fe0" stroke-opacity=".55" stroke-width="3"/>
+    <path d="M-44,-86 q8,-18 30,-22" stroke="#fff" stroke-opacity=".18" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="-34" cy="-30" r="7" fill="${PAINT[4].hex}" opacity=".85"/><circle cx="40" cy="-26" r="6" fill="${PAINT[8].hex}" opacity=".85"/><circle cx="6" cy="-14" r="5" fill="${PAINT[0].hex}" opacity=".9"/>
+    <path class="drip" d="M-30,14 v16 q0,6 5,6 t5,-6 v-16z" fill="#1c1033"/><path class="drip d2" d="M18,16 v22 q0,6 5,6 t5,-6 v-22z" fill="#1c1033"/>
+    ${eye(-22, -72, 15)}${eye(12, -88, 9)}${eye(30, -62, 12)}${eye(-4, -54, 6)}
+    <path d="M-26,-34 q7,10 13,0 q7,10 13,0 q7,10 13,0 q7,10 13,0" stroke="#d8ff5a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </g></svg>`;
+  const B = () => `<svg viewBox="-80 -170 160 190" overflow="visible"><g class="cr-in">
+    <path class="cr-body" d="M-34,6 C-48,-50 -36,-130 0,-138 C36,-130 48,-50 34,6 C22,14 12,4 0,12 C-12,4 -22,14 -34,6Z" fill="#241240" stroke="#c07bff" stroke-opacity=".5" stroke-width="3"/>
+    <path d="M-30,-70 C-62,-62 -70,-40 -60,-14" stroke="#241240" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M30,-70 C62,-60 74,-34 62,-8" stroke="#241240" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <ellipse cx="-60" cy="-8" rx="6" ry="11" fill="${PAINT[2].hex}"/><ellipse cx="62" cy="-2" rx="6" ry="11" fill="${PAINT[10].hex}"/>
+    <path d="M0,-138 q-6,-24 10,-34" stroke="#241240" stroke-width="5" fill="none"/><circle cx="12" cy="-172" r="6" fill="${PAINT[5].hex}"/>
+    ${eye(0, -96, 20)}${eye(-18, -58, 7)}${eye(18, -58, 7)}
+    <path d="M-14,-36 q14,12 28,0" stroke="#d8ff5a" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </g></svg>`;
+  const C = () => `<svg viewBox="-60 -60 120 80" overflow="visible"><g class="cr-in">
+    <path class="cr-body" d="M-44,10 C-50,-30 -20,-52 0,-52 C22,-52 50,-30 44,10Z" fill="#1c1033" stroke="#7b4fe0" stroke-opacity=".5" stroke-width="3"/>
+    ${eye(-14, -26, 10)}${eye(14, -26, 10)}<path d="M-12,-4 q12,8 24,0" stroke="#d8ff5a" stroke-width="3" fill="none" stroke-linecap="round"/></g></svg>`;
+
+  // ตำแหน่งตามระดับความใกล้ (0 = ไกล, 1 = ใกล้)  หน่วย vw / dvh
+  const PATH = {
+    a: L => ({ x: -9 + 30 * L, y: 15 - 3 * L, s: 0.78 + 0.5 * L, r: -8 + 6 * L }),
+    b: L => ({ x: 98 - 30 * L, y: 21 - 3 * L, s: 0.7 + 0.55 * L, r: 7 - 5 * L }),
+    c: L => ({ x: 40 + 6 * L, y: 6 + 3 * L, s: 0.35 + 0.4 * L, r: 0 })
+  };
+
+  function place(name, L, instant) {
+    const d = list[name]; if (!d) return;
+    const p = PATH[name](L);
+    d.el.style.transition = instant ? 'none' : '';
+    d.el.style.setProperty('--x', p.x + 'vw'); d.el.style.setProperty('--y', p.y + 'dvh');
+    d.el.style.setProperty('--s', p.s); d.el.style.setProperty('--r', p.r + 'deg');
+    d.el.style.opacity = d.vis ? 1 : 0;
+  }
+  return {
+    init() {
+      root = document.getElementById('creatures');
+      root.innerHTML = '<div class="creature a">' + A() + '</div><div class="creature b">' + B() + '</div><div class="creature c">' + C() + '</div>';
+      ['a', 'b', 'c'].forEach(n => { list[n] = { el: root.querySelector('.creature.' + n), vis: false }; });
+      document.addEventListener('pointermove', e => {           // ตาของสิ่งมีชีวิตมองตามนิ้ว/เมาส์
+        root.querySelectorAll('.pupil').forEach(p => {
+          const r = p.getBoundingClientRect(); if (!r.width) return;
+          const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height / 2), m = Math.hypot(dx, dy) || 1, k = Math.min(1, m / 200) * 4;
+          p.style.transform = `translate(${(dx / m * k).toFixed(1)}px,${(dy / m * k).toFixed(1)}px)`;
+        });
+      }, { passive: true });
+    },
+    /** กำหนดว่าตัวไหนปรากฏ + ระดับความใกล้ */
+    show(names, L, instant) {
+      level = L == null ? level : L;
+      Object.keys(list).forEach(n => { list[n].vis = names.includes(n); place(n, level, instant); });
+    },
+    hideAll() { Object.keys(list).forEach(n => { list[n].vis = false; list[n].el.style.opacity = 0; }); },
+    setLevel(L) { level = TCE.clamp(L, 0, 1); Object.keys(list).forEach(n => place(n, level)); },
+    get level() { return level; },
+    /** ตกใจ: กระโดดเข้าใกล้ชั่วครู่ แล้วถอยกลับ */
+    lunge() {
+      Object.keys(list).forEach(n => { if (list[n].vis) { list[n].el.classList.remove('lunge'); void list[n].el.offsetWidth; list[n].el.classList.add('lunge'); } });
+    },
+    recoil() { Object.keys(list).forEach(n => { if (list[n].vis) { list[n].el.classList.remove('recoil'); void list[n].el.offsetWidth; list[n].el.classList.add('recoil'); } }); }
+  };
+})();
+
+/* ---------------- ไฟ: กะพริบ / ดับ / แดง-น้ำเงิน ---------------- */
+const Lights = (function () {
+  let dark, rb, flickTimer = null;
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  return {
+    init() { dark = document.getElementById('dark'); rb = document.getElementById('redblue'); },
+    level(o, ms) { dark.style.transitionDuration = (ms == null ? 400 : ms) + 'ms'; dark.style.opacity = o; },
+    async flicker(n) {
+      for (let i = 0; i < (n || 4); i++) { this.level(0.9, 0); await sleep(40 + Math.random() * 70); this.level(0.15, 0); await sleep(50 + Math.random() * 120); }
+    },
+    async blackout(ms) { Sfx.blackout(); this.level(1, 120); await sleep(ms || 1200); },
+    on(ms) { this.level(0, ms == null ? 500 : ms); },
+    startIdleFlicker() {                                   // ไฟกะพริบเป็นระยะ ๆ ระหว่างเล่น
+      this.stopIdleFlicker();
+      const loop = async () => { await this.flicker(2 + (Math.random() * 3 | 0)); this.level(0.12, 200); flickTimer = setTimeout(loop, 7000 + Math.random() * 9000); };
+      flickTimer = setTimeout(loop, 4000);
+    },
+    stopIdleFlicker() { clearTimeout(flickTimer); flickTimer = null; },
+    redblue(on) { rb.classList.toggle('on', !!on); }
+  };
+})();
+
+/* ---------------- อนุภาคสี (confetti / สาดสี) ---------------- */
+const Fx = (function () {
+  let cv, cx, parts = [], raf = 0, dpr = 1;
+  function size() { dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = innerWidth * dpr; cv.height = innerHeight * dpr; }
+  function loop() {
+    cx.clearRect(0, 0, cv.width, cv.height);
+    parts = parts.filter(p => p.life > 0 && p.y < innerHeight + 40);
+    parts.forEach(p => {
+      p.vy += p.g; p.x += p.vx; p.y += p.vy; p.vx *= p.drag; p.rot += p.vr; p.life--;
+      cx.save(); cx.globalAlpha = Math.min(1, p.life / 20); cx.translate(p.x * dpr, p.y * dpr); cx.rotate(p.rot); cx.fillStyle = p.c;
+      if (p.shape === 'rect') cx.fillRect(-p.r * dpr, -p.r * 0.5 * dpr, p.r * 2 * dpr, p.r * dpr);
+      else { cx.beginPath(); cx.arc(0, 0, p.r * dpr, 0, 6.3); cx.fill(); }
+      cx.restore();
+    });
+    raf = parts.length ? requestAnimationFrame(loop) : 0;
+  }
+  function add(list) { parts.push(...list); if (!raf) raf = requestAnimationFrame(loop); }
+  const pal = () => TCE.Color.WHEEL.map(w => w.hex);
+  return {
+    init() { cv = document.getElementById('fx'); cx = cv.getContext('2d'); size(); addEventListener('resize', size); },
+    /** สาดสีออกจากจุดหนึ่ง */
+    burst(x, y, colors, n) {
+      colors = colors && colors.length ? colors : pal(); const out = [];
+      for (let i = 0; i < (n || 26); i++) {
+        const a = Math.random() * 6.283, v = 2 + Math.random() * 6;
+        out.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 2, g: 0.18, drag: 0.97, r: 3 + Math.random() * 6, c: colors[i % colors.length], life: 38 + Math.random() * 26, rot: 0, vr: 0, shape: 'dot' });
+      }
+      add(out);
+    },
+    confetti(ms) {
+      const t0 = performance.now(), cols = pal();
+      const spawn = () => {
+        const out = [];
+        for (let i = 0; i < 7; i++) out.push({ x: Math.random() * innerWidth, y: -10, vx: (Math.random() - .5) * 3, vy: 1 + Math.random() * 3, g: 0.05, drag: 0.995, r: 4 + Math.random() * 5, c: cols[Math.random() * cols.length | 0], life: 260, rot: Math.random() * 6, vr: (Math.random() - .5) * .3, shape: Math.random() < .6 ? 'rect' : 'dot' });
+        add(out);
+        if (performance.now() - t0 < (ms || 3500)) setTimeout(spawn, 60);
+      };
+      spawn();
+    },
+    clear() { parts = []; }
+  };
+})();
+
+/* ---------------- ภาพประกอบ Cutscene ---------------- */
+const CutArt = {
+  /** มุมมองประตู (ใช้ในคัตซีน) */
+  door() {
+    return `<svg id="cutDoor" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<defs>
+ <linearGradient id="cdHall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#101a38"/><stop offset="1" stop-color="#05060f"/></linearGradient>
+ <radialGradient id="cdLight" cx=".5" cy=".4" r=".7"><stop offset="0" stop-color="#fff" stop-opacity="1"/><stop offset=".5" stop-color="#cfeaff" stop-opacity=".85"/><stop offset="1" stop-color="#9ac8ff" stop-opacity=".2"/></radialGradient>
+ <clipPath id="cdGlass"><rect x="150" y="90" width="100" height="120" rx="6"/></clipPath>
+</defs>
+<rect x="60" y="30" width="280" height="450" fill="#150d1d"/>
+<rect id="cdOpening" x="76" y="46" width="248" height="434" fill="url(#cdLight)" opacity="0"/>
+<g id="cdDoorLeaf" style="transform-origin:76px 260px">
+ <rect x="76" y="46" width="248" height="434" fill="#46303d"/>
+ <rect x="104" y="244" width="192" height="100" rx="5" fill="none" stroke="#2c1d27" stroke-width="5"/><rect x="104" y="364" width="192" height="96" rx="5" fill="none" stroke="#2c1d27" stroke-width="5"/>
+ <rect x="150" y="90" width="100" height="120" rx="6" fill="#070914"/>
+ <g clip-path="url(#cdGlass)"><rect x="150" y="90" width="100" height="120" fill="url(#cdHall)"/>
+  <g id="cdSil" class="cd-sil"><ellipse cx="200" cy="190" rx="34" ry="62" fill="#010208"/><circle cx="188" cy="150" r="7" fill="#d8ff5a"/><circle cx="212" cy="150" r="7" fill="#d8ff5a"/><circle cx="188" cy="150" r="3" fill="#000"/><circle cx="212" cy="150" r="3" fill="#000"/></g></g>
+ <rect x="150" y="90" width="100" height="120" rx="6" fill="none" stroke="#7a566a" stroke-width="5"/>
+ <circle cx="96" cy="300" r="9" fill="#c5a45a"/>
+ <g id="cdBolts">${[0, 1, 2].map(i => `<g class="bolt locked" id="cdBolt${i}" transform="translate(300,${150 + i * 90})"><rect x="-26" y="-9" width="48" height="18" rx="4" fill="#808690"/><circle class="led" cx="-34" cy="0" r="6"/></g>`).join('')}</g>
+ <g id="cdLock" class="cd-lock"><circle cx="200" cy="330" r="46" fill="#1b1230" stroke="#8d7bd6" stroke-width="4"/>
+  ${TCE.Color.WHEEL.map((w, i) => { const a = (i * 30 - 90) * Math.PI / 180; return `<circle cx="${(200 + 30 * Math.cos(a)).toFixed(1)}" cy="${(330 + 30 * Math.sin(a)).toFixed(1)}" r="7.5" fill="${w.hex}"/>`; }).join('')}
+  <circle cx="200" cy="330" r="12" fill="#0b0716" stroke="#8d7bd6"/></g>
+</g>
+<g id="cdExit" class="exit-sign" style="opacity:0"><rect x="150" y="6" width="100" height="26" rx="5" fill="#0b3b22"/><text x="200" y="25" text-anchor="middle" font-size="17" font-weight="700" fill="#5dffa0" font-family="Prompt,sans-serif" letter-spacing="3">EXIT</text></g>
+</svg>`;
+  },
+  /** ฉากหน้าโรงเรียนตอนกลางคืน — มีผีในหน้าต่างห้องศิลปะ (เฉลย: แมวดำบนรั้ว) */
+  school() {
+    const rnd = TCE.rng(5); let stars = '';
+    for (let i = 0; i < 40; i++) stars += `<circle class="star" style="animation-delay:${(rnd() * 4).toFixed(1)}s" cx="${(rnd() * 400).toFixed(0)}" cy="${(rnd() * 170).toFixed(0)}" r="${(0.6 + rnd() * 1.1).toFixed(1)}" fill="#fff"/>`;
+    let wins = '';
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 6; c++) {
+      const art = r === 1 && c === 0, x = 62 + c * 50, y = 232 + r * 50;
+      wins += art ? '' : `<rect x="${x}" y="${y}" width="30" height="30" rx="2" fill="#0b1026"/>`;
+    }
+    let bars = ''; for (let i = 0; i < 22; i++) bars += `<rect x="${i * 19 - 4}" y="372" width="5" height="52" fill="#0a0d20"/>`;
+    return `<svg id="cutSchool" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+<defs>
+ <linearGradient id="scSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#040922"/><stop offset="1" stop-color="#27407e"/></linearGradient>
+ <linearGradient id="scRoad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#171c3a"/><stop offset="1" stop-color="#06070f"/></linearGradient>
+ <radialGradient id="scMoon"><stop offset="0" stop-color="#fff7cf" stop-opacity=".9"/><stop offset="1" stop-color="#fff7cf" stop-opacity="0"/></radialGradient>
+ <radialGradient id="scLamp" cx=".5" cy="0" r="1"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".75"/><stop offset="1" stop-color="#ffe7a0" stop-opacity="0"/></radialGradient>
+ <radialGradient id="scWin"><stop offset="0" stop-color="#ffe9a8"/><stop offset="1" stop-color="#ffb85a"/></radialGradient>
+</defs>
+<rect width="400" height="500" fill="url(#scSky)"/>${stars}
+<circle cx="326" cy="70" r="52" fill="url(#scMoon)"/><circle cx="326" cy="70" r="22" fill="#f6f2d6"/>
+<!-- อาคารเรียน -->
+<g id="scBuilding">
+ <rect x="34" y="176" width="332" height="170" fill="#121838"/><rect x="26" y="168" width="348" height="12" fill="#1a2148"/>
+ <rect x="150" y="136" width="100" height="40" fill="#161d42"/><rect x="146" y="130" width="108" height="8" fill="#1f2858"/>
+ <circle cx="200" cy="156" r="14" fill="#d9d2b8" stroke="#2a2118" stroke-width="3"/><line x1="200" y1="156" x2="200" y2="146" stroke="#1d160f" stroke-width="2"/><line x1="200" y1="156" x2="207" y2="158" stroke="#1d160f" stroke-width="2"/>
+ <rect x="120" y="190" width="160" height="26" rx="4" fill="#0b3b22" opacity=".9"/><text x="200" y="209" text-anchor="middle" font-size="16" font-weight="700" fill="#cfe8d8" font-family="Prompt,sans-serif">โรงเรียน</text>
+ ${wins}
+ <rect x="170" y="296" width="60" height="50" fill="#0a0d20"/>
+ <g id="scArtWin"><rect x="56" y="282" width="42" height="40" rx="3" fill="url(#scWin)"/><line x1="77" y1="282" x2="77" y2="322" stroke="#5a3a1e" stroke-width="2"/><line x1="56" y1="302" x2="98" y2="302" stroke="#5a3a1e" stroke-width="2"/>
+  <g id="scGhost" style="transition:opacity 1.4s"><ellipse cx="66" cy="308" rx="7" ry="9" fill="#14092a"/><circle cx="64" cy="305" r="2.4" fill="#d8ff5a"/><circle cx="70" cy="305" r="2.4" fill="#d8ff5a"/></g>
+  <g id="scEyesAgain" style="opacity:0;transition:opacity 1.6s"><ellipse cx="88" cy="306" rx="6" ry="9" fill="#14092a"/><circle cx="86" cy="303" r="2.4" fill="#d8ff5a"/><circle cx="91" cy="303" r="2.4" fill="#d8ff5a"/></g>
+ </g>
+</g>
+<!-- ถนน/รั้ว/ไฟถนน -->
+<rect y="344" width="400" height="156" fill="url(#scRoad)"/>
+<rect y="424" width="400" height="76" fill="#05060d"/>
+<line x1="0" y1="414" x2="400" y2="414" stroke="#1a2148" stroke-width="3"/>
+<rect x="0" y="368" width="400" height="5" fill="#0a0d20"/>${bars}
+<rect x="170" y="364" width="14" height="66" fill="#0a0d20"/><rect x="230" y="364" width="14" height="66" fill="#0a0d20"/>
+<g transform="translate(340,260)"><rect x="-3" y="0" width="6" height="170" fill="#0a0d20"/><path d="M-22 0 Q0 -16 22 0Z" fill="#0a0d20"/><ellipse cx="0" cy="-2" rx="16" ry="4" fill="#fff4b8"/></g>
+<ellipse cx="340" cy="372" rx="120" ry="70" fill="url(#scLamp)"/>
+<!-- ผู้เล่นเดินออกจากประตูรั้ว -->
+<g id="scPlayer" class="sc-walk"><ellipse cx="0" cy="62" rx="22" ry="5" fill="#000" opacity=".5"/><circle cx="0" cy="0" r="8" fill="#02030a"/><path d="M-9 10 Q0 4 9 10 L11 44 L4 44 L2 28 L-2 28 L-4 44 L-11 44Z" fill="#02030a"/><rect x="-14" y="14" width="8" height="18" rx="3" fill="#02030a"/></g>
+<!-- แมวดำบนรั้ว (เฉลย) -->
+<g id="scCat" class="sc-cat" transform="translate(322,370) scale(1.7)">
+ <path class="sc-tail" d="M12,18 C34,20 36,-4 26,-12" stroke="#07070d" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+ <ellipse cx="0" cy="8" rx="15" ry="18" fill="#07070d" stroke="#4a5390" stroke-width=".8"/>
+ <polygon points="-10,-20 -9,-36 -1,-25" fill="#07070d" stroke="#4a5390" stroke-width=".8"/><polygon points="10,-20 9,-36 1,-25" fill="#07070d" stroke="#4a5390" stroke-width=".8"/>
+ <circle cx="0" cy="-14" r="12" fill="#07070d" stroke="#4a5390" stroke-width=".8"/>
+ <g class="sc-eyes"><ellipse cx="-4.8" cy="-15" rx="2.7" ry="3.3" fill="#b6ff3b"/><ellipse cx="4.8" cy="-15" rx="2.7" ry="3.3" fill="#b6ff3b"/><rect x="-5.6" y="-17.5" width="1.6" height="5" rx=".8" fill="#07070d"/><rect x="4" y="-17.5" width="1.6" height="5" rx=".8" fill="#07070d"/></g>
+ <path d="M-2,-9 l2,2 l2,-2" stroke="#e58aa6" stroke-width="1" fill="none" stroke-linecap="round"/>
+ <path d="M-14,-11 l-9,-2 M-14,-8 l-9,2 M14,-11 l9,-2 M14,-8 l9,2" stroke="#8f98d8" stroke-width=".7" stroke-linecap="round"/>
+</g>
+</svg>`;
+  },
+  /** ฉากจบ: ทางเดินด้านนอก + เงาของผู้เล่น (และเงาอีกเงาหนึ่ง) */
+  outside() {
+    return `<svg id="cutOut" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+<defs>
+ <linearGradient id="coWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1430"/><stop offset="1" stop-color="#05070f"/></linearGradient>
+ <linearGradient id="coFloor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b2140"/><stop offset="1" stop-color="#090b17"/></linearGradient>
+ <radialGradient id="coGlow" cx="0" cy=".5" r="1"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#9ac8ff" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="400" height="340" fill="url(#coWall)"/><rect y="340" width="400" height="160" fill="url(#coFloor)"/>
+<g stroke="#2a3568" stroke-width="3" fill="none"><path d="M0 120 L400 150"/><path d="M0 340 L400 340"/></g>
+<g fill="#1a2250">${[0, 1, 2, 3].map(i => `<rect x="${60 + i * 88}" y="170" width="46" height="120" rx="4"/>`).join('')}</g>
+<rect x="0" y="40" width="130" height="400" fill="url(#coGlow)" opacity=".9"/>
+<g id="coShadows">
+ <ellipse cx="170" cy="400" rx="14" ry="40" fill="#000" opacity="0" />
+ <path d="M168 372 L330 428 L330 446 L190 396Z" fill="#000" opacity=".55"/>   <!-- เงาของผู้เล่นทอดยาว -->
+ <g class="shadow2"><path d="M190 372 L376 452 L378 476 L208 394Z" fill="#000" opacity=".7"/><circle cx="364" cy="454" r="4" fill="#d8ff5a"/><circle cx="374" cy="458" r="4" fill="#d8ff5a"/></g>   <!-- เงาที่สอง -->
+</g>
+<g fill="#000"><circle cx="160" cy="308" r="12"/><path d="M146 324 Q160 316 174 324 L178 388 L168 388 L166 360 L158 360 L156 388 L146 388Z"/></g>
+</svg>`;
+  }
+};
+
+;
+/* =====================================================================
+   GAME — โครงหน้าจอ, คัตซีน, ด่าน 1–4 (Single Player), ฉากจบ
+   ===================================================================== */
+const CONFIG = {
+  // ค่ามาจาก firebaseConfig.databaseURL ที่ "บนสุดของโค้ด" (ไฟล์ firebase-config.js) — ดู FIREBASE_SETUP.md
+  // (หรือกดปุ่ม ⚙️ ในเกมเพื่อตั้งค่าเฉพาะเครื่องนั้น โดยไม่ต้องแก้โค้ด)
+  FIREBASE_DB_URL: (typeof firebaseConfig !== 'undefined' && firebaseConfig && /^https?:\/\/\S+/.test(String(firebaseConfig.databaseURL || '').trim()))
+    ? String(firebaseConfig.databaseURL).trim().replace(/\/+$/, '') : '',
+  ROUNDS: 5
+};
+
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const C = TCE.Color, WHEEL = C.WHEEL, IDX = C.IDX;
+const lsGet = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const lsDel = k => { try { localStorage.removeItem(k); } catch (e) {} };
+const brName = n => n.replace(/(เหลือง|แดง|น้ำเงิน)(ส้ม|เขียว|ม่วง)/, '$1<br>$2');
+const lum = hex => { const n = parseInt(hex.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
+const textOn = hex => lum(hex) > 0.62 ? '--tc:#1b1320;--ts:0 1px 2px rgba(255,255,255,.6)' : '--tc:#fff;--ts:0 1px 3px #000,0 0 6px #000';
+const cname = i => WHEEL[i].name;
+
+const G = { stage: 0, scores: [0, 0, 0, 0], pressure: 0, mode: 'solo', prog: 0, abortRound: null };
+const total = () => G.scores.reduce((a, b) => a + b, 0);
+
+/* ---------------- บันทึกความคืบหน้า ---------------- */
+const SAVE_KEY = 'tce_save_v1';
+function loadSave() { try { const s = JSON.parse(lsGet(SAVE_KEY)); if (s && s.v === 1 && s.next >= 2 && s.next <= 5) return s; } catch (e) {} return null; }
+function writeSave(next) { lsSet(SAVE_KEY, JSON.stringify({ v: 1, next, scores: G.scores, ts: Date.now() })); }
+
+/* ---------------- UI พื้นฐาน ---------------- */
+function show(id) {
+  $$('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+  $('#hud').hidden = !['scr-play', 'scr-cut'].includes(id) || G.hudOff;
+}
+function toast(msg, ms) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), ms || 2400); }
+function modal(html, buttons) {
+  const box = $('#modalBox'); box.innerHTML = html + '<div class="stack" id="mBtns" style="margin-top:6px"></div>';
+  (buttons || [{ label: 'ปิด' }]).forEach(b => {
+    const el = document.createElement('button'); el.className = 'btn ' + (b.cls || 'ghost'); el.textContent = b.label; el.style.width = '100%';
+    el.onclick = async () => { if (!b.keep) closeModal(); if (b.fn) await b.fn(); }; $('#mBtns').appendChild(el);
+  });
+  $('#modal').classList.add('open');
+}
+function closeModal() { $('#modal').classList.remove('open'); }
+function waitClick(el) { return new Promise(res => { el.addEventListener('click', function f() { el.removeEventListener('click', f); res(); }); }); }
+
+function hudSegs(n) { $('#hudSeg').innerHTML = '<i></i>'.repeat(n); }
+function hudProgress(done, partial) {
+  $$('#hudSeg i').forEach((el, i) => el.style.setProperty('--f', i < done ? 1 : i === done ? Math.max(0, Math.min(1, partial || 0)) : 0));
+}
+function hudScore(n) { $('#hudScore').innerHTML = n + '<small>แต้ม</small>'; }
+function hudClock() {
+  if (G.mode !== 'solo') { $('#hudClock').textContent = '21:00'; return; }
+  const overall = ((G.stage - 1) + G.prog) / 4;
+  $('#hudClock').textContent = '21:' + String(Math.min(59, Math.floor(overall * 50))).padStart(2, '0');
+}
+function setProg(frac) { G.prog = Math.max(0, Math.min(1, frac)); hudProgress(G.stage - 1, G.prog); hudClock(); creatureTick(); }
+function addScore(n) { G.scores[G.stage - 1] += n; hudScore(total()); }
+
+function creatureTick() {
+  if (G.mode !== 'solo') return;
+  const base = [0, 0.12, 0.3, 0.45, 0.6][G.stage] || 0.1;
+  Creatures.setLevel(base + 0.12 * G.prog + G.pressure);
+}
+function good() { G.pressure = Math.max(0, G.pressure - 0.04); Creatures.recoil(); creatureTick(); }
+function bad() { G.pressure = Math.min(0.22, G.pressure + 0.05); Creatures.lunge(); creatureTick(); }
+
+class Item {
+  constructor() { this.wrong = 0; this.hints = 0; }
+  pts() { return Math.max(3, 10 - 3 * this.wrong - (this.hints ? 2 : 0)); }
+}
+
+/* Feedback card */
+function fb(kind, title, html) {
+  const el = $('#fb'); if (!el) return;
+  const ico = { good: '✨', bad: '👻', hint: '💡', info: '📖' }[kind];
+  el.innerHTML = `<div class="card ${kind}"><div class="ico">${ico}</div><div><div class="tt">${title}</div><div class="tx">${html}</div></div></div>`;
+  if (kind === 'good') Sfx.good(); else if (kind === 'bad') Sfx.bad(); else if (kind === 'hint') Sfx.hint();
+  try { el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+}
+
+function setPanel(html, wide) {
+  const p = $('#panel'); p.className = 'panel' + (wide ? ' wide' : ''); p.innerHTML = html; p.scrollTop = 0;
+  show('scr-play');
+}
+
+/* วงกลมบินจากจุดหนึ่งไปอีกจุด */
+function flyTo(fromEl, toEl, color) {
+  return new Promise(res => {
+    const a = fromEl.getBoundingClientRect(), b = toEl.getBoundingClientRect();
+    const f = document.createElement('div'); f.className = 'fly';
+    f.style.cssText = `left:${a.left}px;top:${a.top}px;width:${a.width}px;height:${a.height}px;background:${color};box-shadow:0 0 26px 6px ${color}`;
+    document.body.appendChild(f); void f.offsetWidth;
+    f.style.left = b.left + 'px'; f.style.top = b.top + 'px'; f.style.width = b.width + 'px'; f.style.height = b.height + 'px';
+    setTimeout(() => { f.remove(); res(); }, 820);
+  });
+}
+function centerOf(el) { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; }
+
+/* ---------------- วงจรสี (Component) ---------------- */
+function buildWheel(opt) {
+  opt = opt || {};
+  const el = document.createElement('div');
+  el.className = 'wheel' + (opt.names ? ' names' : '') + (opt.cls ? ' ' + opt.cls : '');
+  el.innerHTML = '<svg class="zones" viewBox="0 0 100 100"></svg><svg class="lines" viewBox="0 0 100 100"></svg><div class="center"></div>';
+  const arc = (a1, a2, fill) => {
+    const p = a => [50 + 49 * Math.cos(a * Math.PI / 180), 50 + 49 * Math.sin(a * Math.PI / 180)];
+    const [x1, y1] = p(a1), [x2, y2] = p(a2);
+    return `<path d="M50 50 L${x1.toFixed(1)} ${y1.toFixed(1)} A49 49 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z" fill="${fill}"/>`;
+  };
+  $('.zones', el).innerHTML = arc(-105, 75, 'rgba(255,130,40,.30)') + arc(75, 255, 'rgba(60,120,255,.30)');
+  const slots = [];
+  WHEEL.forEach((w, i) => {
+    const a = (i * 30 - 90) * Math.PI / 180, b = document.createElement('button');
+    b.type = 'button'; b.dataset.i = i;
+    b.className = 'slot' + (opt.filled && !opt.filled.has(i) ? ' empty' : '');
+    b.style.cssText = `--c:${w.hex};--sx:${(50 + 38 * Math.cos(a)).toFixed(2)}%;--sy:${(50 + 38 * Math.sin(a)).toFixed(2)}%;${textOn(w.hex)}`;
+    b.setAttribute('aria-label', w.name);
+    b.innerHTML = `<span class="dot"></span><span class="tier">${w.tier}</span><span class="lbl">${brName(w.name)}</span>`;
+    el.appendChild(b); slots.push(b);
+  });
+  const lines = $('.lines', el), ctr = $('.center', el);
+  const pt = i => { const a = (i * 30 - 90) * Math.PI / 180; return [50 + 38 * Math.cos(a), 50 + 38 * Math.sin(a)]; };
+  return {
+    el, slots, ctr,
+    center(html) { ctr.innerHTML = html; },
+    addLine(a, b, guide, color) {
+      const [x1, y1] = pt(a), [x2, y2] = pt(b), l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1); l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('style', `stroke:${color || '#fff'};color:${color || '#fff'}`); if (guide) l.setAttribute('class', 'guide');
+      lines.appendChild(l); return l;
+    },
+    clearGuides() { $$('line.guide', lines).forEach(l => l.remove()); },
+    zones(on) { $('.zones', el).classList.toggle('on', on); },
+    fill(i) { slots[i].classList.remove('empty'); slots[i].classList.add('ok'); setTimeout(() => slots[i].classList.remove('ok'), 700); }
+  };
+}
+function swatchCenter(hex, title, sub) {
+  return `<div class="center-card"><div class="center-swatch" style="--c:${hex}"></div>${title}${sub ? '<small>' + sub + '</small>' : ''}</div>`;
+}
+
+/* ---------------- คัตซีน ---------------- */
+const Cut = {
+  skip: false, waiters: [],
+  wait(ms) {
+    if (this.skip) return Promise.resolve();
+    return new Promise(res => { const w = { res }; w.t = setTimeout(() => { this.waiters = this.waiters.filter(x => x !== w); res(); }, ms); this.waiters.push(w); });
+  },
+  doSkip() { this.skip = true; this.waiters.forEach(w => { clearTimeout(w.t); w.res(); }); this.waiters = []; },
+  async run(fn, o) {
+    o = o || {}; this.skip = false;
+    const scr = $('#scr-cut'); scr.classList.toggle('over', !!o.over);
+    $('#cutSkip').hidden = false; $('.cut-wrap', scr).classList.toggle('final', !!o.final);
+    show('scr-cut'); const view = $('#cutView'), cap = $('#cutCap'); view.innerHTML = ''; cap.innerHTML = '';
+    const api = {
+      view: (html, full) => { view.className = 'cut-view' + (full ? ' full' : ''); view.innerHTML = html; },
+      say: async (text, who, ms) => {
+        cap.innerHTML = (who ? `<div class="who">${who}</div>` : '') + `<div>${text}</div>`; cap.style.animation = 'none'; void cap.offsetWidth; cap.style.animation = 'rise .5s both';
+        await this.wait(ms || (1300 + text.length * 48));
+      },
+      wait: ms => this.wait(ms)
+    };
+    await fn(api);
+    $('#cutSkip').hidden = true; this.skip = false; cap.innerHTML = '';
+  }
+};
+
+/* ฉากย่อยที่ใช้ซ้ำ */
+async function beatBlackout(a, text) {
+  await Lights.flicker(5); await Lights.blackout(1100); if (text) await a.say(text, null, 1700); Lights.on(900);
+}
+async function beatCreaturePass(a, text) {
+  Scene.pan(1, 900); Sfx.growl(); Scene.silPass(); Sfx.knock(2);
+  await a.say(text, null, 2600); await a.wait(1200);
+}
+async function beatChalk(a, text) {
+  a.view(`<div class="chalk">${esc(text)}</div>`); Sfx.whoosh(); Sfx.tick(true);
+  await a.wait(3800);
+}
+async function beatPA(a, text) {
+  a.view('<div class="pa"><div class="spk talk" id="spk">📢</div></div>'); Sfx.pa(); await a.wait(900);
+  Sfx.speak(text); await a.say(text, 'เสียงประกาศ', 3800); const s = $('#spk'); if (s) s.classList.remove('talk');
+}
+async function beatDoor(a, unlocked, text) {
+  a.view(CutArt.door()); await a.wait(500);
+  for (let i = 0; i < 3; i++) if (i < unlocked - 1) $('#cdBolt' + i).classList.remove('locked');
+  if (unlocked >= 1) { const b = $('#cdBolt' + (unlocked - 1)); await a.wait(700); Sfx.door('close'); await a.wait(400); Sfx.door('unlock'); b.classList.remove('locked'); }
+  Scene.openBolt(unlocked - 1);
+  if (unlocked === 3) { $('#cdLock').classList.add('glow'); }
+  await a.say(text, null, 2800);
+}
+
+async function cutAfter(stage) {
+  Creatures.hideAll(); Lights.redblue(false); Lights.stopIdleFlicker();
+  if (stage === 1) await Cut.run(async a => {
+    a.view(''); await beatBlackout(a, 'ไฟดับลงอย่างกะทันหัน...');
+    Scene.setStage(2);
+    await beatCreaturePass(a, 'เงาบางอย่างเดินผ่านหน้าต่างประตู — แล้วหายไป');
+    await beatChalk(a, 'แม่สีทั้งสาม\nคือต้นกำเนิดของทุกสี\n\nทุกสีมี "คู่ตรงข้าม"\nหาคู่ให้เจอ... บนผนัง');
+    await beatDoor(a, 1, 'กลอนชั้นที่ 1 ปลดล็อกแล้ว (1/3)');
+  }, { over: true });
+  if (stage === 2) await Cut.run(async a => {
+    a.view(''); Scene.setStage(3); Creatures.show(['a', 'c'], 0.5, true);
+    await beatPA(a, 'ใกล้แล้ว... แต่ในห้องนี้ ยังมีสีที่ร้อน และสีที่เย็น');
+    await beatCreaturePass(a, 'เสียงเคาะดังมาจากหลังประตู... ตึก ตึก ตึก');
+    await beatChalk(a, 'ร้อน หรือ เย็น?\nสีบอกอุณหภูมิได้\nแยกให้ถูก...\nก่อนที่ไฟจะดับทั้งห้อง');
+    await beatDoor(a, 2, 'กลอนชั้นที่ 2 ปลดล็อกแล้ว (2/3)');
+  }, { over: true });
+  if (stage === 3) await Cut.run(async a => {
+    a.view(''); Scene.setStage(4);
+    await beatBlackout(a, 'ไฟกะพริบถี่ขึ้น... เสียงประหลาดดังก้องไปทั้งทางเดิน');
+    await beatPA(a, 'กลอนสุดท้าย ต้องใช้สีที่ผสมได้แม่นยำเท่านั้น');
+    await beatDoor(a, 3, 'กลอนชั้นที่ 3 ปลดล็อกแล้ว (3/3) — แต่ประตูยังไม่ขยับ...');
+    await a.say('ประตูบานสุดท้ายต้องใช้ "วงล้อสี" — ด่านสุดท้ายแยกเล่นผ่าน QR Code', null, 3600);
+  }, { over: true });
+}
+
+/* ---------------- การ์ดเปิดด่าน ---------------- */
+const STAGES = {
+  1: { t: 'THE PRIMARY COLORS', s: 'ความลับของแม่สี', d: 'ค้นหาแม่สีบนจานสี แล้วผสมสีเพื่อเติมวงจรสี 12 สีให้ครบ' },
+  2: { t: 'OPPOSITE', s: 'สีคู่ตรงข้าม', d: 'วงจรสีปรากฏบนผนัง — หาสีที่อยู่ตรงข้ามกันให้ครบทุกคู่' },
+  3: { t: 'HOT OR COLD', s: 'วรรณะของสี', d: 'ไฟเปลี่ยนเป็นแดงและน้ำเงิน — แยกสีร้อนและสีเย็นให้ถูกต้อง' },
+  4: { t: 'THE FINAL MIX', s: 'การผสมสีครั้งสุดท้าย', d: 'ผสมสีด้วยแม่สี แดง–เหลือง–น้ำเงิน ให้ตรงเป้าหมาย 5 รอบ ทั้งแม่นและเร็ว' }
+};
+function applyStageEnv(n) {
+  Scene.setStage(n); Lights.redblue(n === 3); Lights.startIdleFlicker();
+  const set = { 1: [['a'], 0.12], 2: [['a', 'c'], 0.3], 3: [['a', 'b', 'c'], 0.45], 4: [['a', 'b', 'c'], 0.6] }[n];
+  Creatures.show(set[0], set[1]); G.pressure = 0;
+}
+async function stageCard(n) {
+  G.stage = n; G.prog = 0; G.mode = 'solo'; hudSegs(4);
+  $('#hudStage').textContent = 'ด่านที่ ' + n; $('#hudName').textContent = STAGES[n].s; hudProgress(n - 1, 0); hudScore(total()); hudClock();
+  applyStageEnv(n);
+  const S = STAGES[n]; $('#scr-cut').classList.add('over'); $('#cutSkip').hidden = true; $('#cutCap').innerHTML = '';
+  show('scr-cut'); $('#cutView').className = 'cut-view';
+  $('#cutView').innerHTML = `<div class="stage-card"><div class="n">ด่านที่ ${n}</div><div class="t">${S.t}</div><div class="s">${S.s}</div><p class="d">${S.d}</p><button class="btn big" id="scGo" style="margin-top:18px">เริ่มด่าน ▶</button></div>`;
+  Sfx.tick(true); await waitClick($('#scGo')); Sfx.pick();
+}
+function stageDone(n) {
+  Sfx.complete(); Fx.confetti(2600); setProg(1);
+  writeSave(n + 1);
+}
+
+/* =====================================================================
+   ด่านที่ 1 — THE PRIMARY COLORS
+   ===================================================================== */
+const PRIMARY_WHY = {
+  R: 'แดง เป็นแม่สี — ผสมขึ้นจากสีอื่นไม่ได้',
+  Y: 'เหลือง เป็นแม่สี — ผสมขึ้นจากสีอื่นไม่ได้',
+  B: 'น้ำเงิน เป็นแม่สี — ผสมขึ้นจากสีอื่นไม่ได้'
+};
+async function stage1() {
+  await stageCard(1);
+  await s1Primaries(); await s1Mix(); await s1Summary();
+}
+
+function s1Primaries() {
+  return new Promise(resolve => {
+    const items = [
+      { k: 'R', name: 'แดง', hex: WHEEL[IDX.R].hex, primary: true }, { k: 'Y', name: 'เหลือง', hex: WHEEL[IDX.Y].hex, primary: true }, { k: 'B', name: 'น้ำเงิน', hex: WHEEL[IDX.B].hex, primary: true },
+      { k: 'O', name: 'ส้ม', hex: WHEEL[IDX.O].hex, why: 'ส้ม เกิดจากการผสม <b>แดง + เหลือง</b> จึงไม่ใช่แม่สี' },
+      { k: 'G', name: 'เขียว', hex: WHEEL[IDX.G].hex, why: 'เขียว เกิดจากการผสม <b>เหลือง + น้ำเงิน</b> จึงไม่ใช่แม่สี' },
+      { k: 'V', name: 'ม่วง', hex: WHEEL[IDX.V].hex, why: 'ม่วง เกิดจากการผสม <b>น้ำเงิน + แดง</b> จึงไม่ใช่แม่สี' },
+      { k: 'W', name: 'ขาว', hex: '#f4f4f4', why: 'ขาวเป็น <b>สีกลาง</b> (ใช้ปรับความสว่าง) ไม่ใช่แม่สี' },
+      { k: 'K', name: 'ดำ', hex: '#1b1b1f', why: 'ดำเป็น <b>สีกลาง</b> (ใช้ปรับความเข้ม) ไม่ใช่แม่สี' },
+      { k: 'P', name: 'ชมพู', hex: '#ff9fc2', why: 'ชมพู คือ <b>แดง + ขาว</b> — ผสมได้ จึงไม่ใช่แม่สี' }
+    ];
+    const pos = TCE.shuffle([[34, 28], [56, 24], [78, 30], [24, 54], [46, 50], [68, 54], [88, 52], [60, 73], [80, 72]]);
+    setPanel(`<div class="task">แตะ <b>แม่สี</b> บนจานสีให้ครบ 3 สี</div><p class="sub">แม่สีคือสีที่ผสมขึ้นจากสีอื่นไม่ได้ — มีวงกลมหลอกอยู่ด้วยนะ!</p>
+      <div class="palette"><svg viewBox="0 0 300 200"><path d="M40,110 C20,50 90,10 160,16 C240,22 290,60 280,120 C272,170 220,192 160,186 C130,183 128,160 105,158 C80,156 70,185 50,160 C38,146 42,128 40,110Z" fill="#c89a62" stroke="#7a5230" stroke-width="5"/><ellipse cx="64" cy="106" rx="13" ry="9" fill="#2a1a10" opacity=".85"/></svg>
+      ${items.map((it, i) => `<button class="pcirc" data-k="${it.k}" aria-label="${it.name}" style="--c:${it.hex};--px:${pos[i][0]}%;--py:${pos[i][1]}%;${textOn(it.hex)}"><span class="dot"></span><span class="nm">${it.name}</span></button>`).join('')}</div>
+      <div class="dots3" id="d3"><i></i><i></i><i></i></div><div class="fb" id="fb"></div>
+      <div class="actions"><button class="btn ghost sm" id="hintBtn">💡 คำใบ้</button></div>`);
+    let found = 0, cur = new Item(), hintN = 0, busy = false;
+    $$('.pcirc').forEach(b => b.addEventListener('click', async () => {
+      if (busy || b.classList.contains('gone')) return;
+      const it = items.find(x => x.k === b.dataset.k); Sfx.pick();
+      if (it.primary) {
+        busy = true; b.classList.add('ok', 'glow'); addScore(cur.pts()); cur = new Item(); good();
+        const dot = $$('#d3 i')[found]; Fx.burst(...centerOf(b), [it.hex, '#fff'], 22);
+        await flyTo($('.dot', b), dot, it.hex); b.classList.add('gone');
+        dot.classList.add('on'); dot.style.setProperty('--c', it.hex); found++; setProg(found / 12);
+        fb('good', 'ถูกต้อง!', PRIMARY_WHY[it.k] + ` (${found}/3)`);
+        busy = false;
+        if (found === 3) {
+          busy = true; await sleep(900);
+          fb('info', 'แม่สี (สีขั้นที่ 1)', '<b>แดง เหลือง น้ำเงิน</b> — ผสมจากสีอื่นไม่ได้ แต่ใช้ผสมเป็นสีอื่นได้เกือบทั้งหมด<br>ต่อไปมาลองผสมสีกัน!');
+          $('.actions').innerHTML = '<button class="btn" id="goMix">ไปผสมสี ▶</button>'; await waitClick($('#goMix')); resolve();
+        }
+      } else {
+        cur.wrong++; b.classList.remove('bad'); void b.offsetWidth; b.classList.add('bad'); bad();
+        fb('bad', 'ยังไม่ใช่นะ', it.why + '<br>ลองเลือกใหม่ — ไม่หักคะแนนหนัก ๆ หรอก');
+      }
+    }));
+    $('#hintBtn').onclick = () => {
+      hintN++; cur.hints++;
+      if (hintN === 1) fb('hint', 'คำใบ้', 'แม่สีคือ 3 สีหลักของสีวาดภาพ: สี<b>ของไฟแดง</b> สี<b>ของแสงแดด</b> และสี<b>ของท้องทะเลลึก</b>');
+      else { items.filter(x => x.primary && !$('.pcirc[data-k=' + x.k + ']').classList.contains('gone')).forEach(x => $('.pcirc[data-k=' + x.k + ']').classList.add('pulse')); fb('hint', 'คำใบ้ 2', 'วงกลมที่เต้นอยู่คือแม่สีที่ยังไม่ได้เลือก'); }
+    };
+  });
+}
+
+const MIX_ORDER = ['O', 'G', 'V', 'RO', 'YO', 'YG', 'BG', 'BV', 'RV'];
+function parentsOf(i) {                    // คู่แม่ของสีขั้นที่ 2/3
+  const L = (i + 11) % 12, R = (i + 1) % 12, w = WHEEL[i];
+  if (w.tier === 2) return [(i + 10) % 12, (i + 2) % 12];          // แม่สีสองสีที่อยู่ห่างไปข้างละ 2 ช่อง
+  return WHEEL[L].tier === 1 ? [L, R] : [R, L];                    // แม่สี + สีขั้นที่ 2 ที่อยู่ติดกัน
+}
+function s1Mix() {
+  return new Promise(resolve => {
+    const filled = new Set([IDX.R, IDX.Y, IDX.B]); let sel = [], busy = false, item = new Item(), opts = null;
+    setPanel(`<div class="task">ผสมสีเพื่อเติมวงจรสี — แตะสี <b>2 สี</b> ที่ต้องการผสม</div>
+      <p class="sub"><span class="pill" id="cnt">เติมแล้ว 3/12 สี</span> ช่องที่ว่างจะเต็มเมื่อคุณผสมสีถูกต้อง</p>
+      <div class="work" id="wk"></div><div class="opts" id="opts"></div><div class="fb" id="fb"></div>
+      <div class="actions"><button class="btn ghost sm" id="hintBtn">💡 คำใบ้</button><button class="btn ghost sm" id="clrBtn">↺ เลือกใหม่</button></div>`);
+    const wheel = buildWheel({ names: true, filled }); $('#wk').appendChild(wheel.el);
+    wheel.center('<div class="center-card">เลือก<br>2 สี<small>จากวงจร</small></div>');
+    fb('info', 'เริ่มจากแม่สี', 'ลองแตะ <b>แดง</b> กับ <b>เหลือง</b> เพื่อดูว่าได้สีอะไร');
+    const clearSel = () => { sel = []; wheel.slots.forEach(s => s.classList.remove('sel', 'pulse')); };
+    const resetCenter = () => wheel.center('<div class="center-card">เลือก<br>2 สี<small>จากวงจร</small></div>');
+    const update = () => { $('#cnt').textContent = `เติมแล้ว ${filled.size}/12 สี`; setProg(filled.size / 12); };
+    const nextTarget = () => MIX_ORDER.map(k => IDX[k]).find(i => !filled.has(i));
+
+    async function doMix() {
+      busy = true; const [a, b] = sel, r = C.classifyMix(a, b);
+      wheel.center(`<div class="bowl"><div class="liquid mixing" style="--a:${WHEEL[a].hex};--b:${WHEEL[b].hex}"></div></div>`); Sfx.swirl(); Sfx.splash();
+      await sleep(1150);
+      const liquid = (hex, cls) => wheel.center(`<div class="bowl"><div class="liquid ${cls || ''}" style="--l:${hex}"></div></div>`);
+      const A = cname(a), B = cname(b);
+      if (r.kind === 'neutral' || r.kind === 'muddy') {
+        liquid(r.kind === 'neutral' ? '#6e615b' : '#5b4a3c'); bad();
+        fb('info', 'ได้สีหม่น', r.kind === 'neutral' ? `<b>${A}</b> กับ <b>${B}</b> อยู่ตรงข้ามกันบนวงจรสี ผสมกันแล้วได้ <b>สีหม่นเทา-น้ำตาล</b> (ไม่ใช่สีใหม่ในวงจร) — ลองคู่อื่น` : `สองสีนี้รวมกันแล้วมีแม่สีครบทั้ง 3 จึงได้ <b>สีหม่น</b> ลองเลือกสีที่อยู่ใกล้กันบนวงจร`);
+        clearSel(); busy = false; return;
+      }
+      if (filled.has(r.result)) {
+        liquid(WHEEL[r.result].hex); fb('info', 'มีสีนี้แล้ว', `ผสมได้ <b>${cname(r.result)}</b> ซึ่งอยู่ในวงจรแล้ว — ลองหาช่องที่ยังว่างอยู่`); clearSel(); busy = false; return;
+      }
+      liquid(WHEEL[r.result].hex);
+      const correct = r.result, pool = TCE.shuffle(WHEEL.map(w => w.idx).filter(i => i !== correct)).slice(0, 3);
+      const list = TCE.shuffle([correct, ...pool]);
+      $('#opts').innerHTML = list.map(i => `<button class="opt" data-i="${i}" style="--c:${WHEEL[i].hex}"><span class="dot"></span>${esc(WHEEL[i].name)}</button>`).join('');
+      fb('info', 'ผสมแล้วได้สีอะไร?', `<b>${A}</b> + <b>${B}</b> = ? เลือกสีที่ได้จากด้านล่าง`);
+      opts = { correct, a, b, kind: r.kind, wrongN: 0 };
+      $$('.opt').forEach(o => o.addEventListener('click', () => pickOpt(o)));
+    }
+    async function pickOpt(o) {
+      if (!opts || busy === 'fly') return; const i = +o.dataset.i; Sfx.pick();
+      if (i === opts.correct) {
+        busy = 'fly'; o.classList.add('ok'); const o2 = opts; opts = null; $$('.opt').forEach(x => x.disabled = true);
+        addScore(item.pts()); item = new Item(); good();
+        await flyTo($('.liquid', wheel.ctr), wheel.slots[o2.correct], WHEEL[o2.correct].hex);
+        filled.add(o2.correct); wheel.fill(o2.correct); Fx.burst(...centerOf(wheel.slots[o2.correct]), [WHEEL[o2.correct].hex, '#fff'], 30); update();
+        const A = cname(o2.a), B = cname(o2.b), R = cname(o2.correct);
+        fb('good', `${A} + ${B} = ${R}`, o2.kind === 'secondary' ? `<b>${R}</b> เป็น <b>สีขั้นที่ 2</b> เกิดจากผสมแม่สี 2 สีในปริมาณเท่ากัน` : `<b>${R}</b> เป็น <b>สีขั้นที่ 3</b> เกิดจากผสมแม่สี กับสีขั้นที่ 2 ที่อยู่ติดกัน`);
+        $('#opts').innerHTML = ''; clearSel(); resetCenter(); busy = false;
+        if (filled.size === 12) { busy = true; await sleep(1500); resolve(); }
+      } else {
+        opts.wrongN++; item.wrong++; o.classList.remove('bad'); void o.offsetWidth; o.classList.add('bad'); o.disabled = true; bad();
+        const near = [WHEEL[opts.a].name, WHEEL[opts.b].name];
+        fb('bad', 'ยังไม่ใช่', `คำใบ้: สีที่ได้จะอยู่ <b>ระหว่าง ${near[0]} กับ ${near[1]}</b> บนวงจรสี (ดูสีในวงกลมกลางจอเทียบกับตัวเลือก)`);
+        if (opts.wrongN >= 2) $$('.opt').forEach(x => { if (+x.dataset.i === opts.correct) x.classList.add('pulse'); });
+      }
+    }
+    wheel.slots.forEach(s => s.addEventListener('click', () => {
+      const i = +s.dataset.i; if (busy || opts) { if (opts) toast('เลือกสีที่ได้จากการผสมก่อน'); return; }
+      if (!filled.has(i)) { Sfx.bad(); fb('info', 'ช่องนี้ยังว่าง', 'ต้องผสมสีให้ได้สีนี้ก่อน จึงจะเลือกมาใช้ผสมต่อได้'); return; }
+      Sfx.pick(); const k = sel.indexOf(i);
+      if (k >= 0) { sel.splice(k, 1); s.classList.remove('sel'); return; }
+      sel.push(i); s.classList.add('sel'); if (sel.length === 2) doMix();
+    }));
+    $('#clrBtn').onclick = () => { if (busy) return; clearSel(); opts = null; $('#opts').innerHTML = ''; resetCenter(); };
+    $('#hintBtn').onclick = () => {
+      if (busy === 'fly') return; const t = nextTarget(); if (t == null) return; item.hints++;
+      const [p, q] = parentsOf(t); clearSel();
+      if (!item.h1) { item.h1 = true; fb('hint', 'คำใบ้', `สีที่ยังขาด: <b>${cname(t)}</b> (${WHEEL[t].tier === 2 ? 'สีขั้นที่ 2 — ผสมจากแม่สี 2 สี' : 'สีขั้นที่ 3 — แม่สี + สีขั้นที่ 2 ที่อยู่ติดกัน'}) ลองดูสีที่อยู่ <b>สองข้าง</b> ของช่องนี้`); wheel.slots[t].classList.add('pulse'); wheel.slots[t].classList.remove('empty'); setTimeout(() => { if (!filled.has(t)) wheel.slots[t].classList.add('empty'); wheel.slots[t].classList.remove('pulse'); }, 2200); }
+      else { fb('hint', 'คำใบ้ 2', `ผสม <b>${cname(p)}</b> กับ <b>${cname(q)}</b> จะได้ <b>${cname(t)}</b>`); wheel.slots[p].classList.add('pulse'); wheel.slots[q].classList.add('pulse'); }
+    };
+  });
+}
+function s1Summary() {
+  return new Promise(resolve => {
+    stageDone(1);
+    setPanel(`<div class="bigtitle">🎨 วงจรสี 12 สี — สมบูรณ์!</div><div class="work" id="wk"></div>
+      <div class="lesson">
+        <div class="l"><div class="sw">${['R', 'Y', 'B'].map(k => `<i style="background:${WHEEL[IDX[k]].hex}"></i>`).join('')}</div><div><h4>สีขั้นที่ 1 · แม่สี</h4><p>แดง เหลือง น้ำเงิน — ผสมจากสีอื่นไม่ได้</p></div></div>
+        <div class="l"><div class="sw">${['O', 'G', 'V'].map(k => `<i style="background:${WHEEL[IDX[k]].hex}"></i>`).join('')}</div><div><h4>สีขั้นที่ 2</h4><p>ส้ม เขียว ม่วง — แม่สี 2 สีผสมกัน</p></div></div>
+        <div class="l"><div class="sw">${['RO', 'YO', 'YG', 'BG', 'BV', 'RV'].map(k => `<i style="background:${WHEEL[IDX[k]].hex}"></i>`).join('')}</div><div><h4>สีขั้นที่ 3 · 6 สี</h4><p>แม่สี + สีขั้นที่ 2 ที่อยู่ติดกัน เช่น แดงส้ม เหลืองเขียว</p></div></div>
+      </div><div class="actions"><button class="btn big" id="nx">ผ่านด่านที่ 1 ▶</button></div>`);
+    const w = buildWheel({ names: true }); $('#wk').appendChild(w.el); w.slots.forEach(s => s.disabled = true);
+    w.center('<div class="center-card">12 สี<small>ครบแล้ว!</small></div>');
+    $('#nx').onclick = resolve;
+  });
+}
+
+/* =====================================================================
+   ด่านที่ 2 — OPPOSITE
+   ===================================================================== */
+const OPP_WHY = {
+  R: 'แดง ↔ เขียว: คู่ตรงข้ามที่ตัดกันชัดที่สุด วางคู่กันแล้วทั้งสองสีดูสดขึ้น',
+  Y: 'เหลือง ↔ ม่วง: ม่วงเข้มช่วยให้เหลืองเด่นเป็นประกาย',
+  B: 'น้ำเงิน ↔ ส้ม: ฟ้าเย็นตัดกับส้มอุ่น เป็นคู่ที่นิยมในโปสเตอร์ภาพยนตร์',
+  RO: 'แดงส้ม ↔ น้ำเงินเขียว: คู่สีขั้นที่ 3 ที่ตัดกันอย่างนุ่มนวล',
+  YO: 'เหลืองส้ม ↔ น้ำเงินม่วง: อุ่นสว่างกับเย็นเข้ม ตัดกันสวยงาม',
+  YG: 'เหลืองเขียว ↔ แดงม่วง: คู่สีสดจัดที่ใช้เน้นจุดสนใจได้ดี'
+};
+async function stage2() { await stageCard(2); await s2Play(); await s2Summary(); }
+function s2Play() {
+  return new Promise(resolve => {
+    const qs = TCE.shuffle([0, 1, 2, 3, 4, 5]).map(i => (Math.random() < 0.5 ? i : i + 6));
+    let qi = 0, done = new Set(), tries = 0, hints = 0, wrongSet = new Set(), locked = false;
+    setPanel(`<div class="task" id="tk"></div><p class="sub" id="sb"></p>
+      <div class="cols two"><div class="work" id="wk"></div><div class="work"><div class="need" id="need">${qs.map(() => '<i></i>').join('')}</div><div class="fb" id="fb"></div>
+      <div class="actions" id="acts"><button class="btn ghost sm" id="hintBtn">💡 คำใบ้</button></div></div></div>`, true);
+    const wheel = buildWheel({ names: true }); $('#wk').appendChild(wheel.el);
+    const q = () => qs[qi], opp = i => C.opposite(i);
+    function ask() {
+      locked = false; tries = 0; hints = 0; wrongSet = new Set(); wheel.clearGuides();
+      wheel.slots.forEach((s, i) => { s.classList.remove('target', 'pulse', 'dim'); if (done.has(i)) s.classList.add('ok'); });
+      wheel.slots[q()].classList.add('target');
+      $('#tk').innerHTML = `สีที่อยู่ <b>ตรงข้าม</b> กับ <b style="color:${WHEEL[q()].hex}">${cname(q())}</b> คือสีใด?`;
+      $('#sb').textContent = `ข้อที่ ${qi + 1} จาก ${qs.length} · แตะสีบนวงจรสีที่อยู่ตรงข้ามกัน`;
+      wheel.center(swatchCenter(WHEEL[q()].hex, cname(q()), 'หาสีตรงข้าม'));
+      $$('#need i').forEach((el, k) => el.classList.toggle('on', k < qi)); setProg(qi / qs.length);
+      $('#acts').innerHTML = '<button class="btn ghost sm" id="hintBtn">💡 คำใบ้</button>'; $('#hintBtn').onclick = hint;
+    }
+    function hint() {
+      if (locked) return; hints++; const t = q(), o = opp(t);
+      if (hints === 1) { wheel.addLine(t, o, true, '#ffd84a'); fb('hint', 'คำใบ้', 'สีตรงข้ามอยู่ <b>อีกฝั่งหนึ่งของวงจร</b> ผ่านจุดศูนย์กลาง (ห่างกัน 6 ตำแหน่ง) — เส้นประแสดงทิศทาง'); }
+      else { wheel.slots[o].classList.add('pulse'); fb('hint', 'คำใบ้ 2', 'วงกลมที่เต้นอยู่คือตำแหน่งของสีตรงข้าม'); }
+    }
+    wheel.slots.forEach(s => s.addEventListener('click', async () => {
+      if (locked) return; const i = +s.dataset.i, t = q(); Sfx.pick();
+      if (i === t) { fb('info', 'นั่นคือสีเป้าหมาย', 'ต้องเลือกสีที่อยู่ <b>ตรงข้าม</b> กับสีนี้'); return; }
+      if (done.has(i) && !done.has(t)) { fb('info', 'คู่นี้จับคู่ไปแล้ว', 'เลือกสีอื่นที่ยังไม่มีเส้นเชื่อม'); return; }
+      if (i === opp(t)) {
+        locked = true; const pts = Math.max(3, 10 - 3 * tries - (hints ? 2 : 0)); addScore(pts); good();
+        done.add(t); done.add(i); wheel.clearGuides(); wheel.addLine(t, i, false); Fx.burst(...centerOf(s), [WHEEL[t].hex, WHEEL[i].hex, '#fff'], 30); s.classList.add('ok');
+        const key = [t, i].map(x => WHEEL[x]).find(w => ['R', 'Y', 'B', 'RO', 'YO', 'YG'].includes(w.id)).id;
+        fb('good', `ถูกต้อง! ${cname(t)} ↔ ${cname(i)}`, OPP_WHY[key] + '<br><span class="mini-r">เหตุผล: อยู่ตรงข้ามกันบนวงจรสี และผสมกันแล้วได้สีหม่น</span>');
+        qi++; $$('#need i').forEach((el, k) => el.classList.toggle('on', k < qi)); setProg(qi / qs.length);
+        if (qi >= qs.length) { $('#acts').innerHTML = '<button class="btn" id="nx">ดูสรุป ▶</button>'; $('#nx').onclick = resolve; }
+        else { $('#acts').innerHTML = '<button class="btn" id="nx">ข้อต่อไป ▶</button>'; $('#nx').onclick = ask; }
+      } else {
+        tries++; wrongSet.add(i); s.classList.remove('bad'); void s.offsetWidth; s.classList.add('bad'); s.classList.add('dim'); bad();
+        const d = C.circDist(i, t);
+        wheel.addLine(t, opp(t), true, '#ffd84a');
+        fb('bad', 'ยังไม่ใช่', `${cname(i)} อยู่ห่างจาก ${cname(t)} เพียง ${d} ตำแหน่ง — สีตรงข้ามต้องห่าง <b>6 ตำแหน่ง</b> (ตรงข้ามผ่านจุดศูนย์กลาง) เส้นประแสดงทิศทางที่ควรมองไป`);
+        if (tries >= 2) wheel.slots[opp(t)].classList.add('pulse');
+      }
+    }));
+    ask();
+  });
+}
+function s2Summary() {
+  return new Promise(resolve => {
+    stageDone(2); Lights.on(300);
+    setPanel(`<div class="bigtitle">↔ คู่สีตรงข้ามทั้ง 6 คู่</div><div class="work" id="wk"></div>
+      <div class="fb" id="fb"></div>
+      <div class="actions"><button class="btn big" id="nx">ผ่านด่านที่ 2 ▶</button></div>`);
+    const w = buildWheel({ names: true }); $('#wk').appendChild(w.el); w.slots.forEach(s => s.disabled = true);
+    for (let i = 0; i < 6; i++) w.addLine(i, i + 6, false, WHEEL[i].hex);
+    w.center('<div class="center-card">คู่ตรงข้าม<small>6 คู่</small></div>');
+    fb('info', 'สรุปความรู้', '<b>สีคู่ตรงข้าม</b> (Complementary) คือสี 2 สีที่อยู่ตรงข้ามกันบนวงจรสี — เมื่อวางคู่กันจะ<b>ตัดกันชัดเจน</b> ใช้เน้นจุดสนใจ แต่ถ้า<b>ผสมกัน</b>จะได้สีหม่นลง');
+    Sfx.complete();
+    $('#nx').onclick = resolve;
+  });
+}
+
+/* =====================================================================
+   ด่านที่ 3 — HOT OR COLD
+   ===================================================================== */
+const GN = { warm: 'ร้อน', cool: 'เย็น' };
+const GTXT = {
+  warm: '<b>วรรณะร้อน</b> (เหลือง → แดง) ให้ความรู้สึกอบอุ่น กระตือรือร้น เหมือนไฟและดวงอาทิตย์',
+  cool: '<b>วรรณะเย็น</b> (เขียว → น้ำเงิน → ม่วง) ให้ความรู้สึกสงบ เยือกเย็น เหมือนทะเลและน้ำแข็ง'
+};
+async function stage3() { await stageCard(3); await s3Play(); await s3Summary(); }
+function s3Play() {
+  return new Promise(resolve => {
+    const remaining = new Set(WHEEL.map(w => w.idx)); let grp = 'warm', need = 2, got = 0, rounds = 0, wrongN = 0, hinted = false, zonesShown = false, busy = false;
+    const acceptable = g => [...remaining].filter(i => C.acceptsGroup(i, g));
+    setPanel(`<div class="task" id="tk"></div><p class="sub" id="sb"></p>
+      <div class="cols two"><div class="work" id="wk"></div><div class="work">
+        <div class="need" id="need"></div>
+        <div class="tray"><div class="warm"><div class="th">🔥 วรรณะร้อน</div><div class="chips" id="trW"></div></div><div class="cool"><div class="th">❄️ วรรณะเย็น</div><div class="chips" id="trC"></div></div></div>
+        <div class="fb" id="fb"></div><div class="actions" id="acts"><button class="btn ghost sm" id="hintBtn">💡 คำใบ้</button></div></div></div>`, true);
+    const wheel = buildWheel({ names: true }); $('#wk').appendChild(wheel.el);
+    function ask() {
+      rounds++; got = 0; need = Math.min(2, acceptable(grp).length);
+      $('#tk').innerHTML = `แตะสี <b style="color:${grp === 'warm' ? '#ff9a5a' : '#7db4ff'}">วรรณะ${GN[grp]}</b> ${need} สี ${grp === 'warm' ? '🔥' : '❄️'}`;
+      $('#sb').textContent = `โจทย์ที่ ${rounds} · จัดแล้ว ${12 - remaining.size}/12 สี`;
+      $('#need').innerHTML = '<i></i>'.repeat(need);
+      wheel.center(`<div class="center-card" style="font-size:1.4rem">${grp === 'warm' ? '🔥' : '❄️'}<br>${GN[grp]}<small>แตะ ${need} สี</small></div>`);
+      setProg((12 - remaining.size) / 12);
+    }
+    function nextRound() {
+      if (!remaining.size) return finish();
+      const opp = grp === 'warm' ? 'cool' : 'warm';
+      grp = acceptable(opp).length ? opp : grp; ask();
+    }
+    async function finish() { busy = true; setProg(1); await sleep(900); resolve(); }
+    wheel.slots.forEach(s => s.addEventListener('click', async () => {
+      const i = +s.dataset.i; if (busy) return; Sfx.pick();
+      if (!remaining.has(i)) { fb('info', 'จัดกลุ่มแล้ว', 'สีนี้ถูกจัดเข้ากลุ่มเรียบร้อยแล้ว เลือกสีอื่นที่ยังไม่ได้จัด'); return; }
+      const w = WHEEL[i];
+      if (!C.acceptsGroup(i, grp)) {
+        wrongN++; s.classList.remove('bad'); void s.offsetWidth; s.classList.add('bad'); bad();
+        if (!zonesShown) { zonesShown = true; wheel.zones(true); }
+        fb('bad', 'ยังไม่ใช่', `<b>${w.name}</b> เป็นสี<b>วรรณะ${GN[w.group]}</b> — โจทย์นี้ต้องการวรรณะ${GN[grp]}<br>คำใบ้: พื้นที่ส้ม = ร้อน, พื้นที่ฟ้า = เย็น (แสดงบนวงจรแล้ว)`); return;
+      }
+      const place = w.group;                          // จัดตามบทเรียน (สีรอยต่อรับได้ทั้งสองฝั่ง)
+      remaining.delete(i); got++; good(); addScore(Math.max(3, 10 - 3 * wrongN - (hinted ? 2 : 0))); wrongN = 0; hinted = false;
+      s.classList.add('ok', place); s.classList.add('flag'); if (!w.borderline) s.classList.remove('flag');
+      Fx.burst(...centerOf(s), [w.hex, place === 'warm' ? '#ff9a5a' : '#7db4ff'], 24);
+      const chip = document.createElement('i'); chip.style.setProperty('--c', w.hex); $(place === 'warm' ? '#trW' : '#trC').appendChild(chip);
+      $$('#need i').forEach((el, k) => el.classList.toggle('on', k < got));
+      let txt = GTXT[place];
+      if (w.borderline) txt = `<b>${w.name}</b> เป็น<b>สีรอยต่อ</b> ตีความได้ทั้งสองฝั่ง — ถือว่าถูก! ตามบทเรียนจัดอยู่<b>วรรณะ${GN[place]}</b><br>` + txt;
+      else txt = `<b>${w.name}</b> เป็นวรรณะ${GN[place]}<br>` + txt;
+      fb('good', 'ถูกต้อง!', txt); $('#sb').textContent = `โจทย์ที่ ${rounds} · จัดแล้ว ${12 - remaining.size}/12 สี`; setProg((12 - remaining.size) / 12);
+      if (got >= need) { busy = true; await sleep(1300); busy = false; nextRound(); }
+    }));
+    $('#hintBtn').onclick = () => { hinted = true; zonesShown = true; wheel.zones(true); fb('hint', 'คำใบ้', 'พื้นที่ <b style="color:#ff9a5a">ส้ม</b> = วรรณะร้อน, พื้นที่ <b style="color:#7db4ff">ฟ้า</b> = วรรณะเย็น<br>สีที่มี ~ คือสีรอยต่อ (ตีความได้ทั้งสองฝั่ง)'); };
+    ask();
+  });
+}
+function s3Summary() {
+  return new Promise(resolve => {
+    stageDone(3); Lights.redblue(false);
+    setPanel(`<div class="bigtitle">🔥 ร้อน vs เย็น ❄️</div><div class="work" id="wk"></div>
+      <div class="lesson"><div class="l"><div><h4>🔥 วรรณะร้อน</h4><p>เหลือง · เหลืองส้ม · ส้ม · แดงส้ม · แดง · แดงม่วง — อบอุ่น มีพลัง ดึงดูดสายตา รู้สึกใกล้</p></div></div>
+      <div class="l"><div><h4>❄️ วรรณะเย็น</h4><p>ม่วง · น้ำเงินม่วง · น้ำเงิน · น้ำเงินเขียว · เขียว · เหลืองเขียว — สงบ เยือกเย็น รู้สึกไกล</p></div></div>
+      <div class="l"><div><h4>~ สีรอยต่อ</h4><p>แดงม่วง ม่วง เหลืองเขียว อยู่ตรงรอยต่อของสองวรรณะ จึงตีความได้ทั้งสองแบบ</p></div></div></div>
+      <div class="actions"><button class="btn big" id="nx">ผ่านด่านที่ 3 ▶</button></div>`);
+    const w = buildWheel({ names: true }); $('#wk').appendChild(w.el); w.slots.forEach(s => { s.disabled = true; s.classList.add(WHEEL[s.dataset.i].group); if (WHEEL[s.dataset.i].borderline) s.classList.add('flag'); });
+    w.zones(true); w.center('<div class="center-card">6 ร้อน<br>6 เย็น</div>');
+    $('#nx').onclick = resolve;
+  });
+}
+
+/* =====================================================================
+   ด่านที่ 4 / โหมดแข่งขัน — THE FINAL MIX (ใช้ร่วมกัน)
+   ===================================================================== */
+const RYB = [{ k: 0, nm: 'แดง', hex: WHEEL[IDX.R].hex }, { k: 1, nm: 'เหลือง', hex: WHEEL[IDX.Y].hex }, { k: 2, nm: 'น้ำเงิน', hex: WHEEL[IDX.B].hex }];
+const RING = 'conic-gradient(from -15deg,' + WHEEL.map((w, i) => `${w.hex} ${i * 30}deg ${(i + 1) * 30}deg`).join(',') + ')';
+const rgbOf = v => C.rybToRgb(v[0], v[1], v[2]);
+
+/** เล่น 1 รอบ → คืน {mix, sec, score, hints} (หรือ null ถ้าถูกยกเลิกกลางคัน) */
+function playMixRound(r, targets, opt) {
+  return new Promise(resolve => {
+    const tv = targets[r], trgb = rgbOf(tv), thex = C.rgbToHex(trgb), mix = [0, 0, 0]; let hints = 0, t0 = performance.now(), iv = null, submitted = false;
+    setPanel(`<div class="task">ผสมสีให้ตรงกับ <b>สีเป้าหมาย</b> <span class="pill">รอบ ${r + 1}/${targets.length}</span></div>
+      <div class="timer-t"><span id="tm">⏱ 0.0 วิ</span><span>ยิ่งเร็ว คะแนนความเร็วยิ่งสูง</span></div><div class="timer"><i id="tbar"></i></div>
+      <div class="cols two" style="margin-top:8px"><div class="work"><div class="mixwheel" style="--ring:${RING};--tc:${thex};--mc:#ffffff"><div class="in"><div class="t"></div><div class="m"></div></div></div><div class="mix-labels"><span>◀ เป้าหมาย</span><span>ของคุณ ▶</span></div></div>
+      <div class="work">${RYB.map(c => `<div class="chan" style="--c:${c.hex}"><div class="rr"><span class="nm"><i></i>${c.nm}</span><button class="step" data-k="${c.k}" data-d="-5" aria-label="ลด${c.nm}">−</button><input type="range" min="0" max="100" step="5" value="0" data-k="${c.k}" aria-label="${c.nm}"><button class="step" data-k="${c.k}" data-d="5" aria-label="เพิ่ม${c.nm}">+</button><span class="v" id="v${c.k}">0%</span></div></div>`).join('')}
+        <div class="actions" style="width:100%">${opt.hint ? '<button class="btn ghost sm" id="hintBtn">💡 คำใบ้</button>' : ''}<button class="btn green big" id="submit" style="flex:1">SUBMIT ✔</button></div></div></div><div class="fb" id="fb"></div>`, true);
+    const mw = $('.mixwheel'), refresh = () => {
+      mw.style.setProperty('--mc', C.rgbToHex(rgbOf(mix)));
+      mix.forEach((v, k) => { $('#v' + k).textContent = v + '%'; $('input[data-k="' + k + '"]').value = v; });
+    };
+    $$('input[type=range]').forEach(inp => inp.addEventListener('input', () => { mix[+inp.dataset.k] = +inp.value; refresh(); }));
+    $$('.step').forEach(b => b.addEventListener('click', () => { const k = +b.dataset.k; mix[k] = Math.max(0, Math.min(100, mix[k] + +b.dataset.d)); Sfx.pick(); refresh(); }));
+    const tick = () => {
+      const s = (performance.now() - t0) / 1000; $('#tm').textContent = `⏱ ${s.toFixed(1)} วิ`;
+      $('#tbar').style.setProperty('--t', Math.max(0, Math.min(1, (C.TIME_ZERO - s) / (C.TIME_ZERO - C.TIME_FULL))).toFixed(3));
+    };
+    iv = setInterval(tick, 100); tick();
+    G.abortRound = () => { if (submitted) return; submitted = true; clearInterval(iv); resolve(null); };
+    if (opt.hint) $('#hintBtn').onclick = () => {
+      hints++; const mx = tv.indexOf(Math.max(...tv)), names = ['แดง', 'เหลือง', 'น้ำเงิน'];
+      if (hints === 1) fb('hint', 'คำใบ้ (หักคะแนนเล็กน้อย)', `สีเป้าหมายมี <b>${names[mx]}</b> มากที่สุด`);
+      else fb('hint', 'คำใบ้ 2 (หักคะแนนเล็กน้อย)', 'สัดส่วนโดยประมาณ: ' + tv.map((v, k) => `<b>${names[k]}</b> ≈ ${Math.round(v / 25) * 25}%`).join(' · '));
+    };
+    $('#submit').onclick = () => {
+      if (submitted) return; submitted = true; clearInterval(iv); Sfx.good();
+      const sec = (performance.now() - t0) / 1000, score = C.scoreRound(trgb, rgbOf(mix), sec), pen = Math.min(score.total, hints * 8);
+      G.abortRound = null; resolve({ mix: mix.slice(), sec, score, hints, pen, total: score.total - pen });
+    };
+  });
+}
+
+function recipeHtml(v, label) {
+  return `<div class="r"><div class="sw" style="background:${C.rgbToHex(rgbOf(v))}"></div><div><b>${label}</b><br><span class="mini-r">แดง ${v[0]}% · เหลือง ${v[1]}% · น้ำเงิน ${v[2]}%</span></div></div>`;
+}
+function tipFor(tv, mv) {
+  const nm = ['แดง', 'เหลือง', 'น้ำเงิน'], d = mv.map((v, k) => v - tv[k]), k = d.map(Math.abs).indexOf(Math.max(...d.map(Math.abs)));
+  if (Math.abs(d[k]) <= 10) return 'สัดส่วนแม่สีของคุณใกล้เคียงเป้าหมายมาก!';
+  return `สีของคุณมี <b>${nm[k]}</b> ${d[k] > 0 ? 'มากไป' : 'น้อยไป'} ประมาณ ${Math.abs(d[k])}% — ลอง${d[k] > 0 ? 'ลด' : 'เพิ่ม'}${nm[k]}ดู`;
+}
+/** แสดงผลรอบ + รอกดต่อ */
+function showMixResult(r, targets, res, opt) {
+  return new Promise(resolve => {
+    const tv = targets[r], s = res.score, last = r === targets.length - 1;
+    const verdict = s.pct >= 0.9 ? 'แม่นยำมาก! 🎯' : s.pct >= 0.6 ? 'ใกล้เคียงแล้ว 👍' : 'ยังห่างอยู่ ลองอีกครั้งในรอบหน้า';
+    setPanel(`<div class="result"><div class="bigtitle">รอบที่ ${r + 1}/${targets.length} · ${verdict}</div>
+      <div class="pts" id="pts">0<small> / 100</small></div>
+      <div class="cmp" style="--tc:${C.rgbToHex(rgbOf(tv))};--mc:${C.rgbToHex(rgbOf(res.mix))}"><div class="t"><span>เป้าหมาย</span></div><div class="m"><span>ของคุณ</span></div></div>
+      <div class="bars"><div class="b"><span>ความใกล้เคียง</span><div class="track"><i style="width:${s.closePts / 70 * 100}%"></i></div><span>${s.closePts}/70</span></div>
+      <div class="b"><span>ความเร็ว (${res.sec.toFixed(1)} วิ)</span><div class="track"><i style="width:${s.timePts / 30 * 100}%"></i></div><span>${s.timePts}/30</span></div>
+      ${res.pen ? `<div class="b"><span>คำใบ้</span><div class="track"></div><span>−${res.pen}</span></div>` : ''}</div>
+      <div class="recipe">${recipeHtml(tv, 'สูตรเป้าหมาย')}${recipeHtml(res.mix, 'สูตรของคุณ')}</div>
+      <div class="fb"><div class="card info"><div class="ico">📖</div><div><div class="tt">เรียนรู้จากรอบนี้</div><div class="tx">${tipFor(tv, res.mix)}<br><span class="mini-r">ระบบผสมสีแบบ RYB: ยิ่งใส่แม่สีหลายสี สีจะยิ่งหม่นลง และถ้าครบทั้ง 3 สีมาก ๆ จะใกล้สีน้ำตาลเข้ม</span></div></div></div></div>
+      <div class="actions"><button class="btn big" id="nx">${last ? 'ดูผลรวม ▶' : 'รอบต่อไป ▶'}</button></div></div>`, true);
+    let n = 0; const target = res.total, iv = setInterval(() => { n = Math.min(target, n + Math.max(1, Math.ceil(target / 24))); $('#pts').firstChild.textContent = n; if (n >= target) clearInterval(iv); }, 30);
+    if (s.pct >= 0.6) { Sfx.good(); Fx.confetti(1200); }
+    $('#nx').onclick = () => { clearInterval(iv); resolve(); };
+  });
+}
+
+/** วนเล่นทุกรอบ — opt: {startRound, hint, onRound(r,res)} */
+async function mixRounds(targets, opt) {
+  for (let r = opt.startRound || 0; r < targets.length; r++) {
+    const res = await playMixRound(r, targets, opt);
+    if (!res) return false;
+    await opt.onRound(r, res);
+    await showMixResult(r, targets, res, opt);
+  }
+  return true;
+}
+
+/** ด่านที่ 4 แยกเล่นเป็นเกมแข่งขัน: สร้างห้อง + QR (หรือเล่นคนเดียวในห้อง) */
+async function stage4Gate() {
+  G.stage = 4; G.prog = 0; G.mode = 'solo'; G.hudOff = false; hudSegs(4); const S = STAGES[4];
+  $('#hudStage').textContent = 'ด่านที่ 4'; $('#hudName').textContent = S.s; hudProgress(3, 0); hudScore(total()); hudClock(); applyStageEnv(4);
+  $('#scr-cut').classList.add('over'); $('#cutSkip').hidden = true; $('#cutCap').innerHTML = ''; show('scr-cut'); $('#cutView').className = 'cut-view';
+  $('#cutView').innerHTML = `<div class="stage-card"><div class="n">ด่านที่ 4</div><div class="t">${S.t}</div><div class="s">${S.s}</div>
+    <p class="d">ด่านสุดท้ายแยกเล่นเป็นเกมแข่งขันผ่าน <b>QR Code</b><br>สร้างห้อง แล้วให้ตัวเองและเพื่อนสแกน QR ด้วยโทรศัพท์ — ผสมสีให้ตรงเป้าหมาย 5 รอบ<br>เมื่อประกาศผลแล้ว ทุกคนจะได้เปิดประตูหนีออกจากโรงเรียนพร้อมกัน<br><span class="mini-r">(ไม่มีเพื่อนก็เล่นคนเดียวในห้องได้)</span></p>
+    <div class="stack" style="margin-top:16px"><button class="btn big" id="scGo">📱 สร้างห้อง & รับ QR ▶</button><button class="link" id="scJoin">ฉันมีรหัสห้องอยู่แล้ว</button></div></div>`;
+  Sfx.tick(true);
+  const pick = await Promise.race([waitClick($('#scGo')).then(() => 'create'), waitClick($('#scJoin')).then(() => 'join')]); Sfx.pick();
+  if (pick === 'create') mpStartCreate(true); else showJoinScreen('join');
+}
+
+/* =====================================================================
+   ฉากจบ
+   ===================================================================== */
+const RANKS = [[650, 'Master Colorist', 'จิตรกรผู้ควบคุมสีได้ดั่งใจ'], [500, 'Color Artist', 'ศิลปินผู้เชี่ยวชาญวงจรสี'], [350, 'Apprentice Painter', 'จิตรกรฝึกหัดฝีมือดี'], [0, 'Survivor', 'ผู้รอดชีวิตจากห้องศิลปะ']];
+async function ending() {
+  Creatures.hideAll(); Lights.stopIdleFlicker(); Lights.redblue(false); G.hudOff = true; G.mode = 'solo';
+  await Cut.run(async a => {
+    a.view(CutArt.door());
+    for (let i = 0; i < 3; i++) $('#cdBolt' + i).classList.remove('locked');
+    $('#cdLock').classList.add('glow'); await a.say('วงล้อสีสุดท้ายหมุนจนตรงกับสีบนประตู...', null, 2400);
+    Sfx.door('unlock'); await a.wait(500); Sfx.door('unlock'); await a.wait(500); Sfx.door('unlock'); await a.wait(500);
+    $('#cdExit').style.opacity = 1; Sfx.door('open'); $('#cutDoor').classList.add('cdoor-open'); $('#cdOpening').style.opacity = 1;
+    await a.say('ประตูค่อย ๆ เปิดออก... แสงสว่างสาดเข้ามา', null, 3600);
+    Sfx.whoosh(); a.view(CutArt.outside(), true); Lights.on(0);
+    await a.say('คุณวิ่งออกมาจากห้องศิลปะ ไม่หันหลังกลับไปมอง...', null, 3400);
+    Sfx.knock(1); Sfx.growl(0.6);
+    await a.say('<span class="big red">คุณหนีออกมาได้แล้ว...<br>แต่คุณแน่ใจหรือว่ามีแค่คุณที่ออกมาจากห้องนั้น?</span>', null, 5200);
+    // ---- ฉากหน้าโรงเรียน
+    Sfx.whoosh(); a.view(CutArt.school(), true); Sfx.startAmbient();
+    await a.say('คุณวิ่งผ่านประตูรั้วออกมาสู่ถนนด้านนอก...', null, 3600);
+    Sfx.complete(); Fx.confetti(2600);
+    await a.say('<span class="big">คุณได้ออกจากโรงเรียนแล้ว</span>', null, 3600);
+    await a.say('<span class="big">ยินดีด้วย 🎉</span>', null, 3200);
+    Sfx.growl(0.5);
+    await a.say('แล้วสิ่งมีชีวิตประหลาดในห้องศิลปะ... คืออะไรกันแน่?', null, 3600);
+    const g = $('#scGhost'), cat = $('#scCat'); if (g) g.style.opacity = 0; if (cat) cat.classList.add('show'); Sfx.meow();
+    await a.say('<span class="big">มันคือ... แมวดำ 🐈‍⬛</span>', null, 3600);
+    await a.say('แมวตัวหนึ่งที่เผลอเข้าไปในห้องศิลปะ ท่ามกลางแสงไฟกะพริบและเงาของสี', null, 4200);
+    const e2 = $('#scEyesAgain'); if (e2) e2.style.opacity = 1; Sfx.knock(1);
+    await a.say('<span class="big red">...รึเปล่า?</span>', null, 5200);
+  }, { final: true });
+  endScreen();
+}
+function endScreen() {
+  const t = total(), rk = RANKS.find(x => t >= x[0]); if (loadSave()) writeSave(5); lsSet('tce_best', String(Math.max(+lsGet('tce_best') || 0, t)));
+  $('#hud').hidden = true; G.hudOff = true;
+  const rows = [['ด่าน 1 แม่สี', G.scores[0], 120], ['ด่าน 2 สีตรงข้าม', G.scores[1], 60], ['ด่าน 3 วรรณะสี', G.scores[2], 120], ['ด่าน 4 ผสมสี (แข่งขัน)', G.scores[3], 500]].filter((r, i) => i === 3 || r[1] > 0);
+  $('#endBox').innerHTML = `<div class="title"><span class="sub" style="margin:0">THE END</span></div>
+    <div class="end-score">${t}<small> แต้ม</small></div><div class="rankchip" style="font-size:1rem">${rk[1]} — ${rk[2]}</div>
+    <div class="bars" style="width:100%">${rows.map(([n, v, m]) => `<div class="b"><span>${n}</span><div class="track"><i style="width:${Math.min(100, v / m * 100)}%"></i></div><span>${v}</span></div>`).join('')}</div>
+    <p class="final-line big">...รึเปล่า?</p>
+    <p class="mini-r">คะแนนสูงสุดของเครื่องนี้: ${lsGet('tce_best')}</p>
+    <div class="stack"><button class="btn big" id="eAgain">🔄 เล่นใหม่ตั้งแต่ต้น</button><button class="btn ghost" id="eRoom">👥 สร้างห้องแข่งขันกับเพื่อน</button></div>`;
+  show('scr-end'); Sfx.fanfare(); Fx.confetti(3000); Scene.setStage(4);
+  $('#eAgain').onclick = resetGame; $('#eRoom').onclick = () => mpStartCreate();
+}
+function resetGame() { lsDel(SAVE_KEY); sessionStorage.removeItem('tce_mp'); location.href = location.pathname; }
+
+/* =====================================================================
+   INTRO / เล่นต่อเนื่อง
+   ===================================================================== */
+async function intro() {
+  G.hudOff = true; Lights.level(1, 0); Scene.setStage(1); Creatures.hideAll(); show('scr-intro');
+  const lines = [['21:00 น.', 'first'], ['โรงเรียนปิดไปนานแล้ว...'], ['แต่ทำไมไฟในห้องศิลปะยังเปิดอยู่?'], ['คุณได้ยินเสียงบางอย่างอยู่หลังประตู...']];
+  const box = $('#introLines'); box.innerHTML = ''; Sfx.startClock();
+  const save = loadSave();
+  for (let i = 0; i < lines.length; i++) {
+    const d = document.createElement('div'); d.className = 'typed' + (lines[i][1] ? ' ' + lines[i][1] : ''); d.textContent = lines[i][0]; box.appendChild(d);
+    await sleep(60); d.classList.add('in'); if (i === 3) Sfx.knock(2); await sleep(i === 0 ? 2200 : 2300);
+  }
+  const b = $('#introBtns'); b.style.opacity = 1; b.style.pointerEvents = 'auto';
+  if (save) { $('#btnContinue').hidden = false; $('#btnResetSave').hidden = false; $('#btnContinue').textContent = `▶ เล่นต่อ (ด่านที่ ${save.next > 4 ? 4 : save.next})`; }
+  if (MP.savedSession()) { $('#btnRejoin').hidden = false; }
+}
+
+async function briefing() {
+  Sfx.stopClock(); Lights.level(0.12, 1500); await Cut.run(async a => {
+    a.view(''); Scene.pan(-1, 0); Sfx.startAmbient(); Lights.level(0.12, 2000);
+    await Lights.flicker(4); Lights.level(0.12, 400);
+    await a.say('คุณลืมตาขึ้น... ห้องศิลปะตอนกลางคืน ไฟกะพริบอยู่เหนือหัว', null, 3400);
+    Scene.pan(0, 2400); await a.say('บนโต๊ะวาดภาพ มีพู่กัน จานสี และกระดาษวาดเขียนวางกระจัดกระจาย', null, 3800);
+    Scene.pan(1, 2600); Sfx.door('close'); await a.say('ประตูห้องถูกล็อก... ลูกบิดสั่นเบา ๆ ราวกับมีใครอยู่อีกฝั่ง', null, 3800);
+    Creatures.show(['a'], 0.1); Sfx.growl(0.8);
+    await a.say('มุมห้องมีบางอย่างขยับ...', null, 2200);
+    Scene.pan(-0.2, 1600); await beatPA(a, 'หากต้องการออกจากห้องนี้ จงไขปริศนาของสีให้ครบเสียก่อน');
+  }, { over: true });
+}
+
+async function playFrom(startStage) {
+  G.mode = 'solo'; G.hudOff = false; Sfx.init(); Sfx.startAmbient();
+  const fns = { 1: stage1, 2: stage2, 3: stage3 };
+  for (let n = startStage; n <= 3; n++) { await fns[n](); await cutAfter(n); }   // เล่นเดี่ยว: ด่าน 1–3
+  await stage4Gate();                                                              // ด่าน 4: แยกเล่นผ่าน QR / ห้องแข่งขัน
+}
+async function startNew() {
+  G.scores = [0, 0, 0, 0]; lsDel(SAVE_KEY); G.hudOff = true; hudScore(0); await briefing(); await playFrom(1);
+}
+async function continueGame() {
+  const s = loadSave(); if (!s) return startNew();
+  G.scores = s.scores || [0, 0, 0, 0]; G.hudOff = true;
+  if (s.next >= 5) { endScreen(); return; }
+  Sfx.stopClock(); await playFrom(s.next);
+}
+
+/* ---------------- Menu / ตั้งค่า ---------------- */
+function openMenu() {
+  const inRoom = G.mode === 'mp';
+  const bs = [{ label: '▶ เล่นต่อ' }];
+  if (inRoom) bs.push({ label: '🚪 ออกจากห้อง', fn: () => mpLeave(true) });
+  bs.push({ label: '⚙️ ตั้งค่า Multiplayer (Firebase)', fn: openFbSettings });
+  bs.push({ label: '🗑 เริ่มใหม่ทั้งหมด (Reset)', cls: 'red', fn: () => modal('<h3>เริ่มใหม่ทั้งหมด?</h3><p>ความคืบหน้าและคะแนนที่บันทึกไว้จะถูกล้าง</p>', [{ label: 'ใช่ เริ่มใหม่', cls: 'red', fn: resetGame }, { label: 'ยกเลิก' }]) });
+  modal('<h3>เมนู</h3><p>ความคืบหน้าบันทึกอัตโนมัติ ผู้เล่นต้องผ่านด่านตามลำดับเสมอ</p>', bs);
+}
+function fbUrl() { return CONFIG.FIREBASE_DB_URL || lsGet('tce_fb') || ''; }
+function openFbSettings() {
+  const cur = fbUrl();
+  modal(`<h3>⚙️ เชื่อมต่อ Firebase</h3><p>วาง Realtime Database URL เพื่อเล่น Multiplayer ข้ามอุปกรณ์ (ดูขั้นตอนใน README)<br>ปัจจุบัน: <b>${cur ? 'Firebase' : 'โหมดจำลอง (Local)'}</b></p>
+    <input class="field" id="fbIn" style="font-size:.85rem;text-align:left" placeholder="https://xxxx-default-rtdb.firebaseio.com" value="${esc(cur)}"><div id="fbMsg" class="mini-r" style="margin:8px 0;min-height:1.4em"></div>`,
+    [{ label: '🔌 ทดสอบการเชื่อมต่อ', keep: true, fn: async () => {
+      const u = $('#fbIn').value.trim().replace(/\/+$/, ''), m = $('#fbMsg');
+      if (!/^https:\/\/.+/.test(u)) { m.textContent = '❌ URL ต้องขึ้นต้นด้วย https://'; return; }
+      m.textContent = 'กำลังทดสอบ...';
+      try {
+        const k = 'rooms/_ping_' + Math.random().toString(36).slice(2, 7), r = await fetch(`${u}/${k}.json`, { method: 'PUT', body: '1' });
+        if (!r.ok) { m.textContent = r.status === 401 || r.status === 403 ? '❌ Rules ไม่อนุญาตให้อ่าน/เขียน — ตั้ง Rules ตาม README' : '❌ HTTP ' + r.status; return; }
+        await fetch(`${u}/${k}.json`, { method: 'DELETE' }); m.textContent = '✅ เชื่อมต่อและเขียนข้อมูลได้';
+      } catch (e) { m.textContent = '❌ เชื่อมต่อไม่ได้ (ตรวจ URL / อินเทอร์เน็ต)'; }
+    } },
+    { label: '💾 บันทึก (โหลดหน้าใหม่)', cls: '', fn: () => { const u = $('#fbIn').value.trim().replace(/\/+$/, ''); if (u && !/^https:\/\/.+/.test(u)) { toast('URL ไม่ถูกต้อง'); return; } if (u) lsSet('tce_fb', u); else lsDel('tce_fb'); location.reload(); } },
+    { label: 'ยกเลิก' }]);
+}
+
+;
+/* =====================================================================
+   MP — ระบบห้องแข่งขัน (Room / Lobby / QR / แข่ง 5 รอบ / Leaderboard)
+   ===================================================================== */
+const MP = {
+  net: null, code: null, id: null, name: '', host: false, room: null, unsub: null, hb: null,
+  story: false, phase: 'none', running: false, celebrated: false, lobbyBuilt: false, conn: 'online', my: null,
+  savedSession() { try { const s = JSON.parse(sessionStorage.getItem('tce_mp')); return s && s.code ? s : null; } catch (e) { return null; } },
+  saveSession() { try { sessionStorage.setItem('tce_mp', JSON.stringify({ code: MP.code, id: MP.id, name: MP.name, host: MP.host })); } catch (e) {} }
+};
+const AVATARS = ['🎨', '🖌️', '👻', '🦇', '🕯️', '🔮', '🎃', '🦉', '🧪', '🌈'];
+const avatarOf = id => AVATARS[[...String(id)].reduce((a, c) => a + c.charCodeAt(0), 0) % AVATARS.length];
+const cleanName = s => String(s || '').replace(/[<>\u0000-\u001f]/g, '').trim().slice(0, 14);
+
+function getNet() {
+  if (!MP.net) {
+    MP.net = TCE.Net.create(fbUrl(), (() => { try { return localStorage; } catch (e) { return { getItem: () => null, setItem() {} }; } })(), window);
+    MP.net.onStatus(s => { MP.conn = s; updateConn(); });
+  }
+  return MP.net;
+}
+function usingFirebase() { return getNet().kind === 'firebase'; }
+function updateConn() { const el = $('#connChip'); if (el) el.innerHTML = `<span class="${MP.conn === 'online' ? 'dot-on' : 'dot-off'}"></span>${MP.conn === 'online' ? (usingFirebase() ? 'เชื่อมต่อ Firebase แล้ว' : 'โหมดจำลอง (Local)') : 'ขาดการเชื่อมต่อ... กำลังเชื่อมใหม่'}`; }
+
+/* ---------- URL สำหรับ QR ---------- */
+function baseUrl() {
+  const saved = lsGet('tce_base'); if (saved) return saved;
+  return location.protocol === 'file:' ? '' : location.origin + location.pathname;
+}
+function joinUrl(code) {
+  const base = baseUrl(); if (!base) return '';
+  try {
+    const u = new URL(base); u.search = ''; u.hash = ''; u.searchParams.set('room', code);
+    const fb = lsGet('tce_fb'); if (fb && !CONFIG.FIREBASE_DB_URL) u.searchParams.set('fb', fb);   // ให้ผู้เข้าร่วมใช้ฐานข้อมูลเดียวกันโดยอัตโนมัติ
+    return u.toString();
+  } catch (e) { return ''; }
+}
+function urlWarnings() {
+  const w = [], base = baseUrl(), h = location.hostname;
+  if (!base) w.push('คุณเปิดไฟล์จากเครื่องโดยตรง (file://) — QR จะนำไปไฟล์ในเครื่องซึ่งโทรศัพท์เปิดไม่ได้ <b>ใส่ URL ที่เผยแพร่เกมแล้ว</b> (เช่น GitHub Pages / Firebase Hosting / Netlify) ในช่องด้านล่าง');
+  else if (/^(localhost|127\.|\[?::1)/.test(new URL(base).hostname)) w.push('URL เป็น localhost — โทรศัพท์เครื่องอื่นสแกนแล้วจะเปิดไม่ได้ ให้เผยแพร่เกมขึ้นเว็บ หรือใส่ IP ของเครื่องนี้ในวง LAN เดียวกัน');
+  if (!usingFirebase()) w.push('<b>โหมดจำลอง (Local):</b> ข้อมูลห้องเก็บในเบราว์เซอร์นี้เท่านั้น — ทดสอบได้ด้วยการเปิดหลายแท็บ <b>แต่โทรศัพท์เครื่องอื่นจะยังเข้าห้องไม่ได้</b> จนกว่าจะเชื่อม Firebase (กด ⚙️ ด้านล่าง)');
+  return w;
+}
+
+/* ---------- เข้า/ออกห้อง ---------- */
+function subscribeRoom() {
+  if (MP.unsub) MP.unsub();
+  MP.unsub = getNet().subscribe('rooms/' + MP.code, onRoom);
+  clearInterval(MP.hb);
+  MP.hb = setInterval(() => {
+    if (MP.room && MP.room.players && MP.room.players[MP.id]) getNet().set(`rooms/${MP.code}/players/${MP.id}/lastSeen`, Date.now()).catch(() => {});
+  }, 8000);
+}
+function newPlayerNode(name) { return { name, score: 0, totalTime: 0, round: 0, finished: false, joinedAt: Date.now(), lastSeen: Date.now() }; }
+
+async function mpCreate(name) {
+  const net = getNet(); let code = null;
+  for (let i = 0; i < 8; i++) { const c = TCE.Room.newCode(); if (!(await net.get('rooms/' + c))) { code = c; break; } }
+  if (!code) throw new Error('สร้างรหัสห้องไม่สำเร็จ ลองใหม่อีกครั้ง');
+  MP.code = code; MP.id = TCE.Room.newId(); MP.name = name; MP.host = true;
+  await net.set('rooms/' + code, { host: MP.id, status: 'lobby', seed: 0, createdAt: Date.now(), players: { [MP.id]: newPlayerNode(name) } });
+  enterRoom();
+}
+async function mpJoin(code, name) {
+  const net = getNet(), room = await net.get('rooms/' + code);
+  if (!room) throw new Error('ไม่พบห้องรหัส ' + code + (usingFirebase() ? '' : ' (โหมดจำลอง: ต้องเปิดในเบราว์เซอร์เดียวกับเจ้าของห้อง)'));
+  const saved = MP.savedSession(), players = room.players || {};
+  if (saved && saved.code === code && players[saved.id]) { MP.id = saved.id; MP.name = players[saved.id].name; MP.host = room.host === saved.id; }
+  else {
+    if (room.status !== 'lobby') throw new Error('การแข่งขันในห้องนี้เริ่มไปแล้ว');
+    if (Object.keys(players).length >= 60) throw new Error('ห้องเต็มแล้ว (สูงสุด 60 คน)');
+    let n = name, k = 2; const names = new Set(Object.values(players).map(p => p.name));
+    while (names.has(n)) n = name.slice(0, 12) + k++;
+    MP.id = TCE.Room.newId(); MP.name = n; MP.host = false;
+    await net.set(`rooms/${code}/players/${MP.id}`, newPlayerNode(n));
+  }
+  MP.code = code; enterRoom();
+}
+function enterRoom() {
+  G.mode = 'mp'; MP.phase = 'none'; MP.running = false; MP.celebrated = false; MP.lobbyBuilt = false; MP.saveSession();
+  history.replaceState(null, '', location.pathname);    // ล้าง ?room= ออกจาก URL
+  subscribeRoom();
+}
+async function mpLeave(confirmFirst) {
+  const go = async () => {
+    const net = getNet(); if (MP.unsub) MP.unsub(); clearInterval(MP.hb);
+    try { if (MP.code) { if (MP.host && MP.phase === 'lobby') await net.set('rooms/' + MP.code, null); else if (MP.room && MP.room.players && MP.room.players[MP.id] && MP.phase === 'lobby') await net.set(`rooms/${MP.code}/players/${MP.id}`, null); } } catch (e) {}
+    sessionStorage.removeItem('tce_mp'); location.href = location.pathname;
+  };
+  if (!confirmFirst) return go();
+  modal(`<h3>ออกจากห้อง?</h3><p>${MP.host && MP.phase === 'lobby' ? 'คุณเป็นเจ้าของห้อง — ห้องจะถูกปิดสำหรับทุกคน' : 'คุณสามารถกลับเข้าห้องได้ด้วยรหัสเดิมถ้าเกมยังไม่เริ่ม'}</p>`, [{ label: 'ออกจากห้อง', cls: 'red', fn: go }, { label: 'อยู่ต่อ' }]);
+}
+
+/* ---------- สถานะห้อง (real-time) ---------- */
+function onRoom(r) {
+  MP.room = r;
+  if (!r) { if (MP.phase !== 'none') { toast('ห้องถูกปิดแล้ว'); sessionStorage.removeItem('tce_mp'); setTimeout(() => location.href = location.pathname, 1200); } return; }
+  if (!r.players || !r.players[MP.id]) { if (r.status === 'lobby') getNet().set(`rooms/${MP.code}/players/${MP.id}`, newPlayerNode(MP.name)); return; }
+  MP.host = r.host === MP.id;
+  const st = r.status;
+  if (st === 'lobby') {
+    if (MP.phase !== 'lobby') { if (MP.abortRound) {} G.abortRound && G.abortRound(); MP.phase = 'lobby'; MP.running = false; MP.celebrated = false; MP.lobbyBuilt = false; Creatures.hideAll(); Lights.stopIdleFlicker(); G.hudOff = true; Scene.setStage(1); Lights.level(0.25, 600); buildLobby(); }
+    renderLobby();
+  } else if (st === 'playing') {
+    if (MP.phase === 'lobby' || MP.phase === 'none') runCompetition();
+    else if (MP.phase === 'play') updateRankChip();
+    else if (MP.phase === 'board') renderBoard();
+  } else if (st === 'finished') {
+    if (MP.phase === 'play') { G.abortRound && G.abortRound(); }
+    else if (MP.phase === 'board') renderBoard();
+    else if (MP.phase === 'lobby' || MP.phase === 'none') { MP.phase = 'board'; showBoard(); }
+  }
+  if (MP.host && st === 'playing' && TCE.Room.allFinished(r.players)) getNet().set(`rooms/${MP.code}/status`, 'finished');
+}
+
+/* ---------- Lobby ---------- */
+function buildLobby() {
+  const code = MP.code, url = joinUrl(code), isHost = MP.host;
+  let qr = '', qrErr = '';
+  if (url && isHost) { try { qr = TCE.QR.toSvg(url, { ecc: 'M' }); } catch (e) { qrErr = e.message; } }
+  const warns = isHost ? urlWarnings() : (usingFirebase() ? [] : ['โหมดจำลอง (Local) — ใช้ได้เฉพาะเบราว์เซอร์เดียวกับเจ้าของห้อง']);
+  $('#lobbyBox').innerHTML = `
+    <div class="title"><span class="sub" style="margin:0;font-size:1rem">21:00 · COLOR ESCAPE · ROOM</span></div>
+    ${MP.story && isHost ? '<div class="warn info">🎨 <div><b>ด่านที่ 4 · THE FINAL MIX</b> — ให้เพื่อนสแกน QR เพื่อเข้าร่วม แล้วกด START GAME (กดเริ่มคนเดียวก็ได้)</div></div>' : ''}
+    <div><div class="mini-r">รหัสห้อง</div><div class="roomcode" id="rc">${esc(code)}</div></div>
+    ${isHost ? `<div class="qr" id="qrBox">${qr || '<div style="color:#333;padding:20px;font-size:.8rem">ยังสร้าง QR ไม่ได้</div>'}</div>
+      <div class="mini-r">ให้เพื่อนสแกน QR ด้วยกล้องโทรศัพท์ หรือกรอกรหัสห้องในเกม</div>
+      <div class="urlbox" id="urlBox">${esc(url || '(ยังไม่มี URL สำหรับเข้าร่วม)')}</div>
+      ${qrErr ? `<div class="warn">⚠️ ${esc(qrErr)}</div>` : ''}
+      <div class="row"><button class="btn ghost sm" id="cpUrl">📋 คัดลอกลิงก์</button><button class="btn ghost sm" id="editUrl">✏️ แก้ URL ของ QR</button></div>` : `<p class="sub" style="margin:0">เจ้าของห้องจะเป็นผู้เริ่มเกม — รอสักครู่...</p>`}
+    ${warns.map(w => `<div class="warn">⚠️ <div>${w}</div></div>`).join('')}
+    <div class="row" style="justify-content:space-between;width:100%"><b id="plCount" style="font-family:var(--head)">ผู้เล่นในห้อง</b><span class="conn" id="connChip"></span></div>
+    <ul class="plist" id="plist"></ul>
+    ${isHost ? '<button class="btn big green" id="startGame" style="width:100%">▶ START GAME</button><p class="mini-r" id="startNote"></p>' : '<div class="chip">⏳ รอเจ้าของห้องกด START GAME</div>'}
+    <div class="row"><button class="btn ghost sm" id="fbSet">⚙️ ตั้งค่า Firebase</button><button class="btn ghost sm" id="leave">🚪 ออกจากห้อง</button></div>`;
+  show('scr-lobby'); updateConn();
+  $('#leave').onclick = () => mpLeave(true); $('#fbSet').onclick = openFbSettings;
+  if (isHost) {
+    $('#startGame').onclick = startGame;
+    $('#cpUrl').onclick = async () => { try { await navigator.clipboard.writeText(joinUrl(code)); toast('คัดลอกลิงก์แล้ว'); } catch (e) { toast('คัดลอกไม่ได้ — กดค้างที่ลิงก์เพื่อคัดลอก'); } };
+    $('#editUrl').onclick = () => modal(`<h3>URL ของเกมสำหรับ QR</h3><p>ใส่ที่อยู่เว็บที่เผยแพร่เกมนี้ (เช่น https://ชื่อ.github.io/color-escape/)</p><input class="field" id="baseIn" style="font-size:.85rem;text-align:left" placeholder="https://..." value="${esc(baseUrl())}">`,
+      [{ label: 'บันทึก', fn: () => { const v = $('#baseIn').value.trim(); if (v && !/^https?:\/\/.+/.test(v)) { toast('URL ต้องขึ้นต้นด้วย http(s)://'); return; } v ? lsSet('tce_base', v) : lsDel('tce_base'); MP.lobbyBuilt = false; buildLobby(); renderLobby(); } }, { label: 'ยกเลิก' }]);
+  }
+  MP.lobbyBuilt = true;
+}
+function renderLobby() {
+  if (!MP.lobbyBuilt || !$('#plist')) return;
+  const r = MP.room, ranked = Object.keys(r.players || {}).map(id => Object.assign({ id }, r.players[id])).sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+  const now = Date.now();
+  $('#plist').innerHTML = ranked.map(p => `<li><span class="av" style="--c:${WHEEL[[...p.id].reduce((a, c) => a + c.charCodeAt(0), 0) % 12].hex}">${avatarOf(p.id)}</span><span class="nm">${esc(p.name)}${p.id === r.host ? ' 👑' : ''}</span>${p.id === MP.id ? '<span class="you">คุณ</span>' : ''}<span class="${now - (p.lastSeen || 0) < 30000 ? 'dot-on' : 'dot-off'}"></span></li>`).join('');
+  $('#plCount').textContent = `ผู้เล่นในห้อง (${ranked.length})`;
+  if (MP.host) { $('#startNote').textContent = ranked.length < 2 ? 'ตอนนี้มีคุณคนเดียว — เริ่มเล่นเดี่ยวได้ หรือรอเพื่อนเข้าห้อง' : 'พร้อมแล้ว! ทุกคนจะได้สีเป้าหมายชุดเดียวกัน'; }
+}
+async function startGame() {
+  const btn = $('#startGame'); btn.disabled = true; Sfx.init(); Sfx.pick();
+  try { await getNet().set(`rooms/${MP.code}/seed`, 1 + Math.floor(Math.random() * 2000000000)); await getNet().set(`rooms/${MP.code}/startAt`, Date.now()); await getNet().set(`rooms/${MP.code}/status`, 'playing'); }
+  catch (e) { toast('เริ่มเกมไม่สำเร็จ: ' + e.message); btn.disabled = false; }
+}
+
+/* ---------- แข่งขัน ---------- */
+function updateRankChip() {
+  const r = MP.room; if (!r) return; const ranked = TCE.Room.rank(r.players), me = ranked.find(p => p.id === MP.id), chip = $('#hudRank');
+  if (me) { chip.hidden = false; chip.textContent = `#${me.place}/${ranked.length}`; hudScore(me.score || 0); }
+}
+async function countdownScreen() {
+  $('#hud').hidden = true; show('scr-cut'); $('#scr-cut').classList.add('over'); $('#cutSkip').hidden = true; $('#cutCap').innerHTML = '';
+  const v = $('#cutView'); v.className = 'cut-view';
+  v.innerHTML = '<div class="stage-card"><div class="n">COLOR DUEL · 5 รอบ</div><div class="t">ผสมสีให้ตรง!</div><p class="d">ทุกคนได้สีเป้าหมายเดียวกัน — ปรับแม่สี แดง เหลือง น้ำเงิน ให้ตรงที่สุดและเร็วที่สุด<br>ความใกล้เคียง 70 + ความเร็ว 30 = 100 คะแนน/รอบ</p></div>';
+  await sleep(2600);
+  for (const n of [3, 2, 1, 'GO!']) { v.innerHTML = `<div class="countdown" ${n === 'GO!' ? 'style="color:#d8ff5a"' : ''}>${n}</div>`; Sfx.countdown(n === 'GO!'); await sleep(1000); }
+}
+async function runCompetition() {
+  if (MP.running) return; MP.running = true; MP.phase = 'play'; G.mode = 'mp'; G.hudOff = false; Sfx.init(); Sfx.startAmbient();
+  const room = MP.room, me = room.players[MP.id] || {}, targets = C.makeTargets(CONFIG.ROUNDS, room.seed), start = me.round || 0;
+  MP.my = { name: MP.name, score: me.score || 0, totalTime: me.totalTime || 0, round: start, finished: false, joinedAt: me.joinedAt || Date.now(), rounds: me.rounds || {} };
+  Scene.setStage(4); Creatures.show(['a', 'b', 'c'], 0.45, true); Lights.startIdleFlicker();
+  if (start === 0) await countdownScreen();
+  hudSegs(CONFIG.ROUNDS); $('#hudStage').textContent = 'ห้อง ' + MP.code; $('#hudName').textContent = esc(MP.name); $('#hudClock').textContent = '21:00'; hudProgress(start, 0); hudScore(MP.my.score);
+  $('#hudRank').hidden = false; updateRankChip();
+  const done = await mixRounds(targets, {
+    startRound: start, hint: false,
+    onRound: async (r, res) => {
+      MP.my.score += res.total; MP.my.totalTime = +(MP.my.totalTime + res.sec).toFixed(2); MP.my.round = r + 1; MP.my.finished = r + 1 >= targets.length;
+      MP.my.rounds['r' + r] = { pts: res.total, close: res.score.closePts, speed: res.score.timePts, sec: +res.sec.toFixed(2) };
+      hudScore(MP.my.score); hudProgress(r + 1, 0); Creatures.recoil();
+      try { await getNet().set(`rooms/${MP.code}/players/${MP.id}`, Object.assign({}, MP.my, { lastSeen: Date.now() })); } catch (e) { toast('ส่งคะแนนไม่สำเร็จ — กำลังลองใหม่'); try { await sleep(800); await getNet().set(`rooms/${MP.code}/players/${MP.id}`, MP.my); } catch (e2) {} }
+    }
+  });
+  MP.running = false;
+  if (!done && MP.my && !MP.my.finished) { MP.my.finished = true; MP.my.round = Math.max(MP.my.round, 0); try { await getNet().set(`rooms/${MP.code}/players/${MP.id}`, MP.my); } catch (e) {} }
+  Lights.stopIdleFlicker(); Creatures.hideAll(); MP.phase = 'board'; showBoard();
+}
+
+/* ---------- Leaderboard ---------- */
+function showBoard() {
+  G.hudOff = true; $('#hud').hidden = true; show('scr-board');
+  $('#boardBox').innerHTML = `<div class="title"><span class="sub" style="margin:0">LEADERBOARD · ห้อง ${esc(MP.code)}</span></div>
+    <div id="bHead" class="stack"></div><div class="lb" id="lb"></div><div class="conn" id="connChip"></div>
+    <div class="stack" id="bBtns"></div>`;
+  MP.rows = new Map(); renderBoard();
+}
+function renderLobbyBtns(final) {
+  const b = $('#bBtns'); if (!b) return; const key = (MP.host ? 'h' : 'p') + (final ? 'f' : 'n'); if (b.dataset.k === key) return; b.dataset.k = key;
+  b.innerHTML = (final ? '<button class="btn big" id="toEnd">🚪 ออกจากโรงเรียน (ฉากจบ)</button>' : '') + (MP.host ? (final ? '<button class="btn big green" id="again">🔄 เล่นอีกครั้ง (ห้องเดิม)</button>' : '<button class="btn ghost" id="endNow">⏹ จบการแข่งขันตอนนี้</button>') : '') + '<button class="btn ghost" id="leaveB">🚪 ออกจากห้อง</button>';
+  $('#leaveB').onclick = () => mpLeave(false);
+  if ($('#toEnd')) $('#toEnd').onclick = goEnding;
+  if ($('#again')) $('#again').onclick = playAgain;
+  if ($('#endNow')) $('#endNow').onclick = () => modal('<h3>จบการแข่งขัน?</h3><p>ผู้เล่นที่ยังเล่นไม่ครบจะถูกนับคะแนนเท่าที่ทำได้</p>', [{ label: 'จบการแข่งขัน', cls: 'red', fn: () => getNet().set(`rooms/${MP.code}/status`, 'finished') }, { label: 'ยกเลิก' }]);
+}
+function renderBoard() {
+  const r = MP.room; if (!r || !$('#lb')) return; updateConn();
+  const ranked = TCE.Room.rank(r.players), fin = r.status === 'finished' || TCE.Room.allFinished(r.players), nDone = ranked.filter(p => p.finished).length, top = ranked[0] ? ranked[0].score || 0 : 0;
+  const head = $('#bHead');
+  if (fin) {
+    const winners = ranked.filter(p => p.place === 1);
+    head.innerHTML = `<div class="winner"><div class="spot"></div><div class="crown">👑</div><div class="mini-r">ผู้ชนะ</div><div class="wn">${winners.map(w => esc(w.name)).join(' & ')}</div><div class="rankchip">${winners[0] ? winners[0].score : 0} / ${CONFIG.ROUNDS * 100} คะแนน</div></div>`;
+    if (!MP.celebrated) { MP.celebrated = true; Sfx.fanfare(); Fx.confetti(5200); const me = ranked.find(p => p.id === MP.id); if (me && me.place === 1) toast('🏆 คุณชนะ!', 3500); }
+  } else head.innerHTML = `<div class="chip">⏳ รอผู้เล่นอื่น ${nDone}/${ranked.length} คนเล่นจบ — อันดับอัปเดตแบบสด</div>`;
+  renderLobbyBtns(fin);
+  // FLIP animation
+  const lb = $('#lb'), first = new Map(); MP.rows.forEach((el, id) => first.set(id, el.getBoundingClientRect().top));
+  const keep = new Set();
+  ranked.forEach(p => {
+    keep.add(p.id); let el = MP.rows.get(p.id);
+    if (!el) { el = document.createElement('div'); MP.rows.set(p.id, el); }
+    const medal = p => p.place === 1 ? '🥇' : p.place === 2 ? '🥈' : p.place === 3 ? '🥉' : p.place;
+    el.className = `lb-row${p.id === MP.id ? ' me' : ''}${p.place <= 3 ? ' p' + p.place : ''}`;
+    el.innerHTML = `<div class="pl">${medal(p)}</div><div><div class="nm">${esc(p.name)}${p.id === MP.id ? ' (คุณ)' : ''}</div><div class="sub2"><span class="dots5">${[0, 1, 2, 3, 4].map(i => `<i class="${i < (p.round || 0) ? 'on' : ''}"></i>`).join('')}</span>${p.finished ? '✔' : 'กำลังเล่น'} · ${(p.totalTime || 0).toFixed(1)} วิ</div></div><div class="sc">${p.score || 0}<small> /${CONFIG.ROUNDS * 100}</small></div><div class="bar" style="--b:${top ? (p.score || 0) / (CONFIG.ROUNDS * 100) : 0}"></div>`;
+    lb.appendChild(el);
+  });
+  MP.rows.forEach((el, id) => { if (!keep.has(id)) { el.remove(); MP.rows.delete(id); } });
+  MP.rows.forEach((el, id) => {
+    if (!first.has(id)) return; const dy = first.get(id) - el.getBoundingClientRect().top;
+    if (Math.abs(dy) > 1) { el.style.transition = 'none'; el.style.transform = `translateY(${dy}px)`; void el.offsetWidth; el.style.transition = ''; el.style.transform = ''; }
+  });
+}
+/** จากตารางอันดับ → ฉากจบ (หนีออกจากโรงเรียน) */
+async function goEnding() {
+  const r = MP.room, me = r && r.players && r.players[MP.id], score = me ? (me.score || 0) : 0;
+  if (MP.unsub) MP.unsub(); clearInterval(MP.hb); sessionStorage.removeItem('tce_mp'); MP.phase = 'none'; MP.unsub = null;
+  const sv = loadSave(); G.scores = sv ? (sv.scores || [0, 0, 0]).slice(0, 3).concat([score]) : [0, 0, 0, score];   // ผู้เล่นที่สแกน QR เข้ามาโดยตรงจะไม่มีคะแนนด่าน 1–3
+  Fx.clear(); Sfx.init(); await ending();
+}
+async function playAgain() {
+  const net = getNet(), r = MP.room; if (!MP.host || !r) return;
+  const ids = Object.keys(r.players || {});
+  for (const id of ids) await net.set(`rooms/${MP.code}/players/${id}`, Object.assign(newPlayerNode(r.players[id].name), { joinedAt: r.players[id].joinedAt || Date.now() }));
+  await net.set(`rooms/${MP.code}/seed`, 0); await net.set(`rooms/${MP.code}/status`, 'lobby');
+}
+
+/* ---------- หน้า Create / Join ---------- */
+function showJoinScreen(mode, presetCode) {
+  const create = mode === 'create'; G.hudOff = true;
+  $('#joinBox').innerHTML = `<div class="title"><span class="sub" style="margin:0">${create ? 'CREATE ROOM' : 'JOIN ROOM'}</span></div>
+    <p class="sub" style="margin:0">${create ? (MP.story ? 'ด่านที่ 4 · THE FINAL MIX — ตั้งชื่อเล่นหรือชื่อทีม แล้วสร้างห้อง ให้ตัวเองและเพื่อนสแกน QR เพื่อผสมสีแข่งกัน (เล่นคนเดียวก็ได้)' : 'ตั้งชื่อเล่นหรือชื่อทีมของคุณ แล้วสร้างห้องแข่งขัน') : 'กรอกรหัสห้อง 4 ตัว และชื่อเล่นหรือชื่อทีม'}</p>
+    ${create ? '' : `<input class="field code" id="jCode" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="รหัสห้อง" value="${esc(presetCode || '')}" ${presetCode ? 'readonly' : ''}>`}
+    <input class="field" id="jName" maxlength="14" autocomplete="off" placeholder="ชื่อเล่น / ชื่อทีม" value="${esc(lsGet('tce_name') || '')}">
+    <div class="warn" id="jErr" hidden></div>
+    <button class="btn big" id="jGo" style="width:100%">${create ? '👥 สร้างห้อง' : '🚪 เข้าร่วมห้อง'}</button>
+    <button class="link" id="jBack">${create ? '← กลับ' : (presetCode ? 'ใช้รหัสอื่น' : '← กลับ')}</button>`;
+  show('scr-join');
+  const err = m => { const e = $('#jErr'); e.hidden = !m; e.textContent = m || ''; };
+  const go = async () => {
+    const name = cleanName($('#jName').value), code = create ? null : TCE.Room.normalizeCode($('#jCode').value);
+    if (!name) { err('กรุณากรอกชื่อเล่นหรือชื่อทีม'); return; } if (!create && code.length !== 4) { err('รหัสห้องต้องมี 4 ตัวอักษร'); return; }
+    lsSet('tce_name', name); err(''); const btn = $('#jGo'); btn.disabled = true; btn.textContent = 'กำลังเชื่อมต่อ...'; Sfx.init();
+    try { create ? await mpCreate(name) : await mpJoin(code, name); }
+    catch (e) { err(e.message || 'เชื่อมต่อไม่สำเร็จ'); btn.disabled = false; btn.textContent = create ? '👥 สร้างห้อง' : '🚪 เข้าร่วมห้อง'; }
+  };
+  $('#jGo').onclick = go; $('#jName').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+  $('#jBack').onclick = () => { if (presetCode && !create) { showJoinScreen('join'); } else location.href = location.pathname; };
+}
+function mpStartCreate(story) { MP.story = story === true; Sfx.stopClock(); showJoinScreen('create'); }
+
+/* =====================================================================
+   BOOT
+   ===================================================================== */
+function boot() {
+  Scene.init(); Creatures.init(); Lights.init(); Fx.init();
+  $('#verTag').textContent = 'v1.0';
+  document.addEventListener('pointerdown', () => Sfx.init(), { passive: true });
+  $('#btnSound').textContent = Sfx.muted ? '🔇' : '🔊';
+  $('#btnSound').onclick = () => { Sfx.init(); Sfx.setMuted(!Sfx.muted); $('#btnSound').textContent = Sfx.muted ? '🔇' : '🔊'; };
+  $('#btnMenu').onclick = openMenu; $('#cutSkip').onclick = () => Cut.doSkip(); $('#cutView').addEventListener('click', () => { if (!$('#cutSkip').hidden) Cut.doSkip(); });
+  $('#modal').addEventListener('click', e => { if (e.target.id === 'modal') closeModal(); });
+
+  const q = new URLSearchParams(location.search), fbParam = q.get('fb'), room = TCE.Room.normalizeCode(q.get('room'));
+  if (fbParam && /^https:\/\//.test(fbParam)) lsSet('tce_fb', fbParam.replace(/\/+$/, ''));
+  if (room.length === 4) { Lights.level(0.3, 0); Scene.setStage(1); showJoinScreen('join', room); return; }     // เข้าผ่าน QR → ไปหน้าเข้าร่วมห้องทันที
+
+  $('#scr-gate').addEventListener('click', () => { Sfx.init(); intro(); }, { once: true });
+  $('#btnStart').onclick = () => { Sfx.init(); if (loadSave() && !confirm('มีความคืบหน้าที่บันทึกไว้ — เริ่มใหม่จะล้างข้อมูลเดิม ต้องการเริ่มใหม่หรือไม่?')) return; startNew(); };
+  $('#btnContinue').onclick = () => { Sfx.init(); continueGame(); };
+  $('#btnResetSave').onclick = () => modal('<h3>ล้างความคืบหน้า?</h3><p>คะแนนและด่านที่ผ่านแล้วจะถูกลบ</p>', [{ label: 'ล้างข้อมูล', cls: 'red', fn: resetGame }, { label: 'ยกเลิก' }]);
+  $('#btnCreate').onclick = () => { Sfx.init(); mpStartCreate(); };
+  $('#btnJoin').onclick = () => { Sfx.init(); Sfx.stopClock(); showJoinScreen('join'); };
+  $('#btnRejoin').onclick = async () => {
+    const s = MP.savedSession(); if (!s) return; Sfx.init(); Sfx.stopClock();
+    try { const r = await getNet().get('rooms/' + s.code); if (!r || !r.players || !r.players[s.id]) { sessionStorage.removeItem('tce_mp'); toast('ห้องเดิมไม่อยู่แล้ว'); $('#btnRejoin').hidden = true; return; } MP.code = s.code; MP.id = s.id; MP.name = s.name; MP.host = s.host; enterRoom(); }
+    catch (e) { toast('เชื่อมต่อไม่สำเร็จ'); }
+  };
+}
+document.addEventListener('DOMContentLoaded', boot);
+
+</script>
+</body>
+</html>
